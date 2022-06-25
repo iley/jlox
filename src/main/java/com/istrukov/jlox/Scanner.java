@@ -90,6 +90,8 @@ public class Scanner {
             case '/':
                 if (match('/')) {
                     while (peek() != '\n' && !isAtEnd()) advance();
+                } else if (match('*')) {
+                    scanComment();
                 } else {
                     addToken(TokenType.SLASH);
                 }
@@ -154,6 +156,15 @@ public class Scanner {
 
         var value = Double.parseDouble(input.substring(start, current));
         addToken(TokenType.NUMBER, new Literal(value));
+    }
+
+    private void scanComment() {
+        while (peek() != '*' || peekNext() != '/') {
+            if (peek() == '\n') line++;
+            advance();
+        }
+        advance(); // '*'
+        advance(); // '/'
     }
 
     private char advance() {
