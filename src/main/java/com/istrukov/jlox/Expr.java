@@ -68,15 +68,29 @@ abstract class Expr {
         }
     }
 
-    static class Variable extends Expr {
+    static class VariableReference extends Expr {
         final Token name;
 
-        public Variable(Token name) {
+        public VariableReference(Token name) {
             this.name = name;
         }
 
         @Nullable
         @Override
-        <R> R accept(Visitor<R> visitor) { return visitor.visitVariable(this); }
+        <R> R accept(Visitor<R> visitor) { return visitor.visitVariableReference(this); }
+    }
+
+    static class Assignment extends Expr {
+        final Token name;
+        final Expr expression;
+
+        Assignment(Token name, Expr expression) {
+            this.name = name;
+            this.expression = expression;
+        }
+
+        @Nullable
+        @Override
+        <R> R accept(Visitor<R> visitor) { return visitor.visitAssignment(this); }
     }
 }

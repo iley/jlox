@@ -19,8 +19,11 @@ interface Visitor<R> {
     R visitPrint(Stmt.Print print);
 
     @Nullable
-    R visitVar(Stmt.Var var);
+    R visitVar(Stmt.VariableDeclaration variableDeclaration);
 
     @Nullable
-    R visitVariable(Expr.Variable variable);
+    R visitVariableReference(Expr.VariableReference variableReference);
+
+    @Nullable
+    R visitAssignment(Expr.Assignment assignment);
 }

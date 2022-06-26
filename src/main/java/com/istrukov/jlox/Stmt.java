@@ -31,11 +31,11 @@ abstract class Stmt {
         <R> R accept(Visitor<R> visitor) { return visitor.visitPrint(this); }
     }
 
-    static class Var extends Stmt {
+    static class VariableDeclaration extends Stmt {
         final Token name;
         final Optional<Expr> initializer;
 
-        Var(Token name, Optional<Expr> initializer) {
+        VariableDeclaration(Token name, Optional<Expr> initializer) {
             this.name = name;
             this.initializer = initializer;
         }

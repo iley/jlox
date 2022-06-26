@@ -49,7 +49,7 @@ class Parser {
        var name = consume(TokenType.IDENTIFIER, "expected an identifier in a variable declaration");
        Optional<Expr> initializer = match(TokenType.EQUAL) ? Optional.of(expression()) : Optional.empty();
        consume(TokenType.SEMICOLON, "expected semicolon after variable declaration");
-       return new Stmt.Var(name, initializer);
+       return new Stmt.VariableDeclaration(name, initializer);
     }
 
     private Stmt statement() {
@@ -68,7 +68,21 @@ class Parser {
     }
 
     private Expr expression() {
-        return equality();
+        return assignment();
+    }
+
+    private Expr assignment() {
+       var expr = equality();
+       if (match(TokenType.EQUAL)) {
+           var equals = previous();
+           var value = assignment();
+           if (expr instanceof Expr.VariableReference) {
+               var name = ((Expr.VariableReference)expr).name;
+               return new Expr.Assignment(name, value);
+           }
+           error(equals, "invalid assignment target");
+       }
+       return expr;
     }
 
     private Expr equality() {
@@ -130,7 +144,7 @@ class Parser {
             return new Expr.Grouping(expr);
         }
         if (match(TokenType.IDENTIFIER)) {
-            return new Expr.Variable(previous());
+            return new Expr.VariableReference(previous());
         }
         throw error(peek(), "expected an expression");
     }

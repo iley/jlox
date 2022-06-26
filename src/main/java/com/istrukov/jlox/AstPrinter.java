@@ -29,8 +29,14 @@ class AstPrinter implements Visitor<String> {
     }
 
     @Override
-    public String visitVariable(Expr.Variable var) {
+    public String visitVariableReference(Expr.VariableReference var) {
         return var.name.lexeme();
+    }
+
+    @Nullable
+    @Override
+    public String visitAssignment(Expr.Assignment assignment) {
+        return String.format("(= %s %s)", assignment.name.lexeme(), assignment.expression.accept(this));
     }
 
     @Override
@@ -44,11 +50,11 @@ class AstPrinter implements Visitor<String> {
     }
 
     @Override
-    public String visitVar(Stmt.Var var) {
-        if (var.initializer.isPresent()) {
-            return String.format("(var %s %s)", var.name.lexeme(), var.initializer.get().accept(this));
+    public String visitVar(Stmt.VariableDeclaration variableDeclaration) {
+        if (variableDeclaration.initializer.isPresent()) {
+            return String.format("(var %s %s)", variableDeclaration.name.lexeme(), variableDeclaration.initializer.get().accept(this));
         } else {
-            return String.format("(var %s)", var.name.lexeme());
+            return String.format("(var %s)", variableDeclaration.name.lexeme());
         }
     }
 

@@ -3,7 +3,6 @@ package com.istrukov.jlox;
 import com.google.common.collect.ImmutableList;
 
 import javax.annotation.Nullable;
-import javax.print.DocFlavor;
 
 class Interpreter implements Visitor<Object> {
     private final Environment environment = new Environment();
@@ -29,9 +28,9 @@ class Interpreter implements Visitor<Object> {
 
     @Nullable
     @Override
-    public Object visitVar(Stmt.Var var) {
-        Object value = var.initializer.isPresent() ? eval(var.initializer.get()) : null;
-        environment.define(var.name.lexeme(), value);
+    public Object visitVar(Stmt.VariableDeclaration variableDeclaration) {
+        Object value = variableDeclaration.initializer.isPresent() ? eval(variableDeclaration.initializer.get()) : null;
+        environment.define(variableDeclaration.name.lexeme(), value);
         return null;
     }
 
@@ -48,6 +47,14 @@ class Interpreter implements Visitor<Object> {
     public Object visitExpression(Stmt.Expression expression) {
         eval(expression.expression);
         return null;
+    }
+
+    @Nullable
+    @Override
+    public Object visitAssignment(Expr.Assignment assignment) {
+        var value = eval(assignment.expression);
+        environment.assign(assignment.name, value);
+        return value;
     }
 
     @Nullable
@@ -129,8 +136,8 @@ class Interpreter implements Visitor<Object> {
 
     @Nullable
     @Override
-    public Object visitVariable(Expr.Variable variable) {
-        return environment.get(variable.name);
+    public Object visitVariableReference(Expr.VariableReference variableReference) {
+        return environment.get(variableReference.name);
     }
 
     private boolean isTruthy(@Nullable Object value) {
