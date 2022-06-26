@@ -1,6 +1,9 @@
 package com.istrukov.jlox;
 
+import javax.annotation.Nullable;
+
 class AstPrinter implements Visitor<String> {
+    @Nullable
     String print(Expr expr) {
         return expr.accept(this);
     }

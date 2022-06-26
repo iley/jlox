@@ -1,6 +1,9 @@
 package com.istrukov.jlox;
 
+import javax.annotation.Nullable;
+
 abstract class Expr {
+    @Nullable
     abstract <R> R accept(Visitor<R> visitor);
 
     static class Binary extends Expr {
@@ -14,6 +17,7 @@ abstract class Expr {
             this.right = right;
         }
 
+        @Nullable
         @Override
         <R> R accept(Visitor<R> visitor) {
             return visitor.visitBinary(this);
@@ -29,6 +33,7 @@ abstract class Expr {
             this.right = right;
         }
 
+        @Nullable
         @Override
         <R> R accept(Visitor<R> visitor) {
             return visitor.visitUnary(this);
@@ -42,6 +47,7 @@ abstract class Expr {
             this.expression = expression;
         }
 
+        @Nullable
         @Override
         <R> R accept(Visitor<R> visitor) {
             return visitor.visitGrouping(this);
@@ -55,6 +61,7 @@ abstract class Expr {
             this.value = value;
         }
 
+        @Nullable
         @Override
         <R> R accept(Visitor<R> visitor) {
             return visitor.visitLiteral(this);

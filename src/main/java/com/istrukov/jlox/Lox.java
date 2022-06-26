@@ -10,7 +10,11 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 
 public class Lox {
+    private static final boolean printTokens = false;
+    private static final boolean printAst = false;
+
     private static boolean hadError = false;
+    private static boolean hadRuntimeError = false;
 
     public static void main(String[] args) throws IOException {
         if (args.length == 0) {
@@ -26,7 +30,7 @@ public class Lox {
     private static void runFile(String path) throws IOException {
         byte[] bytes = Files.readAllBytes(Paths.get(path));
         run(new String(bytes, Charset.defaultCharset()));
-        if (hadError) System.exit(1);
+        if (hadError || hadRuntimeError) System.exit(1);
     }
 
     private static void runPrompt() throws IOException {
@@ -44,17 +48,24 @@ public class Lox {
     private static void run(String script) {
         var scanner = new Scanner(script);
         var tokens = ImmutableList.copyOf(scanner.scanTokens());
-        for (var token : tokens) {
-            System.out.printf("%s ", token);
+        if (printTokens) {
+            for (var token : tokens) {
+                System.out.printf("%s ", token);
+            }
+            System.out.println();
         }
-        System.out.println();
         var parser = new Parser(tokens);
         var expr = parser.parse();
-        if (expr.isPresent()) {
+        if (hadError || !expr.isPresent()) {
+            return;
+        }
+        if (printAst) {
             var astPrinter = new AstPrinter();
             var output = astPrinter.print(expr.get());
             System.out.println(output);
         }
+        var interpreter = new Interpreter();
+        interpreter.interpret(expr.get());
     }
 
     static void error(Token token, String message) {
@@ -67,6 +78,11 @@ public class Lox {
 
     static void error(int line, String message) {
         report(line, "", message);
+    }
+
+    static void runtimeError(RuntimeError error) {
+        System.err.printf("[line %d] %s\n", error.token.line(), error.getMessage());
+        hadRuntimeError = true;
     }
 
     static void report(int line, String where, String message) {
