@@ -32,11 +32,11 @@ public class Scanner {
             .put("while", TokenType.WHILE)
             .build();
 
-    public Scanner(String input) {
+    Scanner(String input) {
         this.input = input;
     }
 
-    public List<Token> scanTokens() {
+    List<Token> scanTokens() {
         while (!isAtEnd()) {
             start = current;
             scanToken();
@@ -83,10 +83,13 @@ public class Scanner {
                 break;
             case '=':
                 addToken(match('=') ? TokenType.EQUAL_EQUAL : TokenType.EQUAL);
+                break;
             case '<':
                 addToken(match('=') ? TokenType.LESS_EQUAL : TokenType.LESS);
+                break;
             case '>':
                 addToken(match('=') ? TokenType.GREATER_EQUAL : TokenType.GREATER);
+                break;
             case '/':
                 if (match('/')) {
                     while (peek() != '\n' && !isAtEnd()) advance();
@@ -123,7 +126,15 @@ public class Scanner {
         }
         var text = input.substring(start, current);
         var type = keywords.getOrDefault(text, TokenType.IDENTIFIER);
-        addToken(type);
+        if (type == TokenType.TRUE) {
+            addToken(TokenType.TRUE, new Token.Literal(true));
+        } else if (type == TokenType.FALSE) {
+            addToken(TokenType.FALSE, new Token.Literal(false));
+        } else if (type == TokenType.NIL) {
+            addToken(TokenType.FALSE, new Token.Literal());
+        } else {
+            addToken(type);
+        }
     }
 
     private  void scanString() {
@@ -139,7 +150,7 @@ public class Scanner {
         }
         advance(); // terminating '"'
         var value = input.substring(start+1, current-1);
-        addToken(TokenType.STRING, new Literal(value));
+        addToken(TokenType.STRING, new Token.Literal(value));
     }
 
     private void scanNumber() {
@@ -155,7 +166,7 @@ public class Scanner {
         }
 
         var value = Double.parseDouble(input.substring(start, current));
-        addToken(TokenType.NUMBER, new Literal(value));
+        addToken(TokenType.NUMBER, new Token.Literal(value));
     }
 
     private void scanComment() {
@@ -204,7 +215,7 @@ public class Scanner {
         tokens.add(new Token(type, text, Optional.empty(), line));
     }
 
-    private void addToken(TokenType type, Literal literal) {
+    private void addToken(TokenType type, Token.Literal literal) {
         String text = input.substring(start, current);
         tokens.add(new Token(type, text, Optional.of(literal), line));
     }

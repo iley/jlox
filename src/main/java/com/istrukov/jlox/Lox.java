@@ -1,5 +1,7 @@
 package com.istrukov.jlox;
 
+import com.google.common.collect.ImmutableList;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -41,9 +43,25 @@ public class Lox {
 
     private static void run(String script) {
         var scanner = new Scanner(script);
-        var tokens = scanner.scanTokens();
+        var tokens = ImmutableList.copyOf(scanner.scanTokens());
         for (var token : tokens) {
-            System.out.println(token);
+            System.out.printf("%s ", token);
+        }
+        System.out.println();
+        var parser = new Parser(tokens);
+        var expr = parser.parse();
+        if (expr.isPresent()) {
+            var astPrinter = new AstPrinter();
+            var output = astPrinter.print(expr.get());
+            System.out.println(output);
+        }
+    }
+
+    static void error(Token token, String message) {
+        if (token.type() == TokenType.EOF) {
+            report(token.line(), " at end", message);
+        } else {
+            report(token.line(), String.format(" at '%s'", token.lexeme()), message);
         }
     }
 
@@ -52,7 +70,7 @@ public class Lox {
     }
 
     static void report(int line, String where, String message) {
-        System.err.printf("[line %d ] Error%s: %s", line, where, message);
+        System.err.printf("[line %d] Error%s: %s\n", line, where, message);
         hadError = true;
     }
 }
