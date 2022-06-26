@@ -16,6 +16,8 @@ public class Lox {
     private static boolean hadError = false;
     private static boolean hadRuntimeError = false;
 
+    private static Interpreter interpreter = new Interpreter();
+
     public static void main(String[] args) throws IOException {
         if (args.length == 0) {
             runPrompt();
@@ -55,17 +57,11 @@ public class Lox {
             System.out.println();
         }
         var parser = new Parser(tokens);
-        var expr = parser.parse();
-        if (hadError || !expr.isPresent()) {
+        var program = parser.parse();
+        if (hadError) {
             return;
         }
-        if (printAst) {
-            var astPrinter = new AstPrinter();
-            var output = astPrinter.print(expr.get());
-            System.out.println(output);
-        }
-        var interpreter = new Interpreter();
-        interpreter.interpret(expr.get());
+        interpreter.interpret(program);
     }
 
     static void error(Token token, String message) {

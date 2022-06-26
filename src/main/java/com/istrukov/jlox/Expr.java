@@ -67,4 +67,16 @@ abstract class Expr {
             return visitor.visitLiteral(this);
         }
     }
+
+    static class Variable extends Expr {
+        final Token name;
+
+        public Variable(Token name) {
+            this.name = name;
+        }
+
+        @Nullable
+        @Override
+        <R> R accept(Visitor<R> visitor) { return visitor.visitVariable(this); }
+    }
 }

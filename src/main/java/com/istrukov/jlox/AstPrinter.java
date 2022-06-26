@@ -28,6 +28,30 @@ class AstPrinter implements Visitor<String> {
         return literal.value.toString();
     }
 
+    @Override
+    public String visitVariable(Expr.Variable var) {
+        return var.name.lexeme();
+    }
+
+    @Override
+    public String visitExpression(Stmt.Expression expression) {
+        return parenthesize("expr", expression.expression);
+    }
+
+    @Override
+    public String visitPrint(Stmt.Print print) {
+        return parenthesize("print", print.expression);
+    }
+
+    @Override
+    public String visitVar(Stmt.Var var) {
+        if (var.initializer.isPresent()) {
+            return String.format("(var %s %s)", var.name.lexeme(), var.initializer.get().accept(this));
+        } else {
+            return String.format("(var %s)", var.name.lexeme());
+        }
+    }
+
     private String parenthesize(String name, Expr... exprs) {
         var builder = new StringBuilder();
         builder.append("(").append(name);

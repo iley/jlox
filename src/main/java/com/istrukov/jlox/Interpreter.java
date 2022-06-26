@@ -1,21 +1,53 @@
 package com.istrukov.jlox;
 
+import com.google.common.collect.ImmutableList;
+
 import javax.annotation.Nullable;
 import javax.print.DocFlavor;
 
 class Interpreter implements Visitor<Object> {
-    void interpret(Expr expr) {
+    private final Environment environment = new Environment();
+
+    void interpret(ImmutableList<Stmt> program) {
         try {
-            var value = eval(expr);
-            System.out.println(stringify(value));
+            for (var stmt : program) {
+                execute(stmt);
+            }
         } catch (RuntimeError error) {
             Lox.runtimeError(error);
         }
     }
 
+    void execute(Stmt stmt) {
+        stmt.accept(this);
+    }
+
     @Nullable
     Object eval(Expr expression) {
         return expression.accept(this);
+    }
+
+    @Nullable
+    @Override
+    public Object visitVar(Stmt.Var var) {
+        Object value = var.initializer.isPresent() ? eval(var.initializer.get()) : null;
+        environment.define(var.name.lexeme(), value);
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public Object visitPrint(Stmt.Print print) {
+        var result = eval(print.expression);
+        System.out.println(stringify(result));
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public Object visitExpression(Stmt.Expression expression) {
+        eval(expression.expression);
+        return null;
     }
 
     @Nullable
@@ -93,6 +125,12 @@ class Interpreter implements Visitor<Object> {
         } else {
             return null;
         }
+    }
+
+    @Nullable
+    @Override
+    public Object visitVariable(Expr.Variable variable) {
+        return environment.get(variable.name);
     }
 
     private boolean isTruthy(@Nullable Object value) {

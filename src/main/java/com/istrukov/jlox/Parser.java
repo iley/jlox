@@ -14,12 +14,57 @@ class Parser {
         this.tokens = tokens;
     }
 
-    Optional<Expr> parse() {
+    ImmutableList<Stmt> parse() {
        try {
-           return Optional.of(expression());
+           return program();
        } catch (ParseError error) {
+           return ImmutableList.of();
+       }
+    }
+
+    private ImmutableList<Stmt> program() {
+       var builder = ImmutableList.<Stmt>builder();
+       while (!isAtEnd()) {
+           var decl = declaration();
+           if (decl.isPresent()) {
+               builder.add(decl.get());
+           }
+       }
+       return builder.build();
+    }
+
+    private Optional<Stmt> declaration() {
+       try {
+           if (match(TokenType.VAR)) {
+               return Optional.of(varDeclaration());
+           }
+           return Optional.of(statement());
+       } catch (ParseError error) {
+           synchronize();
            return Optional.empty();
        }
+    }
+
+    private Stmt varDeclaration() {
+       var name = consume(TokenType.IDENTIFIER, "expected an identifier in a variable declaration");
+       Optional<Expr> initializer = match(TokenType.EQUAL) ? Optional.of(expression()) : Optional.empty();
+       consume(TokenType.SEMICOLON, "expected semicolon after variable declaration");
+       return new Stmt.Var(name, initializer);
+    }
+
+    private Stmt statement() {
+       if (match(TokenType.PRINT)) {
+           return printStatement();
+       }
+       var expr = expression();
+       consume(TokenType.SEMICOLON, "expected ; after expression statement");
+       return new Stmt.Expression(expr);
+    }
+
+    private Stmt printStatement() {
+       var expr = expression();
+        consume(TokenType.SEMICOLON, "expected ; after expression in print");
+       return new Stmt.Print(expr);
     }
 
     private Expr expression() {
@@ -83,6 +128,9 @@ class Parser {
             var expr = expression();
             consume(TokenType.RIGHT_PAREN, "expected ')' after expression");
             return new Expr.Grouping(expr);
+        }
+        if (match(TokenType.IDENTIFIER)) {
+            return new Expr.Variable(previous());
         }
         throw error(peek(), "expected an expression");
     }

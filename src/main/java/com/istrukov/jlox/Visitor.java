@@ -11,4 +11,16 @@ interface Visitor<R> {
     R visitGrouping(Expr.Grouping grouping);
     @Nullable
     R visitLiteral(Expr.Literal literal);
+
+    @Nullable
+    R visitExpression(Stmt.Expression expression);
+
+    @Nullable
+    R visitPrint(Stmt.Print print);
+
+    @Nullable
+    R visitVar(Stmt.Var var);
+
+    @Nullable
+    R visitVariable(Expr.Variable variable);
 }
