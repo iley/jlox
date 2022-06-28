@@ -2,10 +2,7 @@ package com.istrukov.jlox;
 
 import javax.annotation.Nullable;
 
-abstract class Expr {
-    @Nullable
-    abstract <R> R accept(Visitor<R> visitor);
-
+abstract class Expr extends AstNode{
     static class Binary extends Expr {
         final Expr left;
         final Token operator;

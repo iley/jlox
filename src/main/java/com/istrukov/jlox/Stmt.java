@@ -1,12 +1,11 @@
 package com.istrukov.jlox;
 
+import com.google.common.collect.ImmutableList;
+
 import javax.annotation.Nullable;
 import java.util.Optional;
 
-abstract class Stmt {
-    @Nullable
-    abstract <R> R accept(Visitor<R> visitor);
-
+abstract class Stmt extends AstNode {
     static class Expression extends Stmt {
         final Expr expression;
 
@@ -44,6 +43,20 @@ abstract class Stmt {
         @Override
         <R> R accept(Visitor<R> visitor) {
             return visitor.visitVar(this);
+        }
+    }
+
+    static class Block extends Stmt {
+        final ImmutableList<Stmt> statements;
+
+        Block(ImmutableList<Stmt> statements) {
+            this.statements = statements;
+        }
+
+        @Nullable
+        @Override
+        <R> R accept(Visitor<R> visitor) {
+            return visitor.visitBlock(this);
         }
     }
 }

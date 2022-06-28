@@ -1,5 +1,7 @@
 package com.istrukov.jlox;
 
+import com.google.common.collect.ImmutableList;
+
 import javax.annotation.Nullable;
 
 class AstPrinter implements Visitor<String> {
@@ -58,11 +60,20 @@ class AstPrinter implements Visitor<String> {
         }
     }
 
-    private String parenthesize(String name, Expr... exprs) {
+    @Override
+    public String visitBlock(Stmt.Block block) {
+        return parenthesize("block", block.statements);
+    }
+
+    private <T extends AstNode> String parenthesize(String name, T... nodes) {
+        return parenthesize(name, ImmutableList.copyOf(nodes));
+    }
+
+    private String parenthesize(String name, ImmutableList<? extends AstNode> nodes) {
         var builder = new StringBuilder();
         builder.append("(").append(name);
-        for (var expr : exprs) {
-            builder.append(" ").append(expr.accept(this));
+        for (var node : nodes) {
+            builder.append(" ").append(node.accept(this));
         }
         builder.append(")");
         return builder.toString();

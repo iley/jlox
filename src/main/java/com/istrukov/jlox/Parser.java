@@ -56,6 +56,9 @@ class Parser {
        if (match(TokenType.PRINT)) {
            return printStatement();
        }
+       if (match(TokenType.LEFT_BRACE)) {
+           return new Stmt.Block(block());
+       }
        var expr = expression();
        consume(TokenType.SEMICOLON, "expected ; after expression statement");
        return new Stmt.Expression(expr);
@@ -65,6 +68,18 @@ class Parser {
        var expr = expression();
         consume(TokenType.SEMICOLON, "expected ; after expression in print");
        return new Stmt.Print(expr);
+    }
+
+    private ImmutableList<Stmt> block() {
+       var builder = ImmutableList.<Stmt>builder();
+       while (!check(TokenType.RIGHT_BRACE) && !isAtEnd()) {
+           var decl = declaration();
+           if (decl.isPresent()) {
+               builder.add(decl.get());
+           }
+       }
+       consume(TokenType.RIGHT_BRACE, "expected } at the end of a block");
+       return builder.build();
     }
 
     private Expr expression() {

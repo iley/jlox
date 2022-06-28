@@ -26,4 +26,7 @@ interface Visitor<R> {
 
     @Nullable
     R visitAssignment(Expr.Assignment assignment);
+
+    @Nullable
+    R visitBlock(Stmt.Block block);
 }

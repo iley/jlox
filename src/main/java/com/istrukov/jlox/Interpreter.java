@@ -5,7 +5,7 @@ import com.google.common.collect.ImmutableList;
 import javax.annotation.Nullable;
 
 class Interpreter implements Visitor<Object> {
-    private final Environment environment = new Environment();
+    private Environment environment = new Environment();
 
     void interpret(ImmutableList<Stmt> program) {
         try {
@@ -140,6 +140,13 @@ class Interpreter implements Visitor<Object> {
         return environment.get(variableReference.name);
     }
 
+    @Nullable
+    @Override
+    public Object visitBlock(Stmt.Block block) {
+        executeBlock(block.statements, new Environment(environment));
+        return null;
+    }
+
     private boolean isTruthy(@Nullable Object value) {
         if (value == null) {
             return false;
@@ -202,5 +209,17 @@ class Interpreter implements Visitor<Object> {
             return text;
         }
         return object.toString();
+    }
+
+    void executeBlock(ImmutableList<Stmt> statements, Environment environment) {
+        var previousEnvironment = this.environment;
+        try {
+            this.environment = environment;
+            for (var statement : statements) {
+                execute(statement);
+            }
+        } finally {
+            this.environment = previousEnvironment;
+        }
     }
 }
