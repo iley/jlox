@@ -79,6 +79,11 @@ class AstPrinter implements Visitor<String> {
         return parenthesize(logical.operator.lexeme(), logical.left, logical.right);
     }
 
+    @Override
+    public String visitWhile(Stmt.While whileLoop) {
+        return parenthesize("while", whileLoop.body);
+    }
+
     private <T extends AstNode> String parenthesize(String name, T... nodes) {
         return parenthesize(name, ImmutableList.copyOf(nodes));
     }

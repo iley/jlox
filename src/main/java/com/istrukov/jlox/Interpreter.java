@@ -101,6 +101,22 @@ class Interpreter implements Visitor<Object> {
 
     @Nullable
     @Override
+    public Object visitLogical(Expr.Logical logical) {
+        var leftResult = eval(logical.left);
+        if (logical.operator.type() == TokenType.AND) {
+            if (!isTruthy((leftResult))) {
+                return false;
+            }
+        } else {
+            if (isTruthy(leftResult)) {
+                return true;
+            }
+        }
+        return eval(logical.right);
+    }
+
+    @Nullable
+    @Override
     public Object visitUnary(Expr.Unary unary) {
         var right = eval(unary.right);
         switch (unary.operator.type()) {
@@ -161,18 +177,11 @@ class Interpreter implements Visitor<Object> {
 
     @Nullable
     @Override
-    public Object visitLogical(Expr.Logical logical) {
-        var leftResult = eval(logical.left);
-        if (logical.operator.type() == TokenType.AND) {
-            if (!isTruthy((leftResult))) {
-                return false;
-            }
-        } else {
-            if (isTruthy(leftResult)) {
-                return true;
-            }
+    public Object visitWhile(Stmt.While whileLoop) {
+        while(isTruthy(eval(whileLoop.condition))) {
+            execute(whileLoop.body);
         }
-        return eval(logical.right);
+        return null;
     }
 
     private boolean isTruthy(@Nullable Object value) {

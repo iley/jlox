@@ -35,4 +35,7 @@ interface Visitor<R> {
 
     @Nullable
     R visitLogical(Expr.Logical logical);
+
+    @Nullable
+    R visitWhile(Stmt.While aWhile);
 }

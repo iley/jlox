@@ -59,6 +59,9 @@ class Parser {
        if (match(TokenType.IF)) {
            return ifStatement();
        }
+       if (match(TokenType.WHILE)) {
+           return whileStatement();
+       }
        if (match(TokenType.LEFT_BRACE)) {
            return new Stmt.Block(block());
        }
@@ -83,6 +86,14 @@ class Parser {
            return new Stmt.If(condition, thenBranch, elseBranch);
        }
        return new Stmt.If(condition, thenBranch);
+    }
+
+    private Stmt.While whileStatement() {
+       consume(TokenType.LEFT_PAREN, "expected ( after while");
+       var condition = expression();
+       consume(TokenType.RIGHT_PAREN, "expected ) after while condition");
+       var body = statement();
+       return new Stmt.While(condition, body);
     }
 
     private ImmutableList<Stmt> block() {

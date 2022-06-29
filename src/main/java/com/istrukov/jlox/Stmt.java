@@ -83,4 +83,20 @@ abstract class Stmt extends AstNode {
             return visitor.visitIf(this);
         }
     }
+
+    static class While extends Stmt {
+        final Expr condition;
+        final Stmt body;
+
+        While(Expr condition, Stmt body) {
+            this.condition = condition;
+            this.body = body;
+        }
+
+        @Nullable
+        @Override
+        <R> R accept(Visitor<R> visitor) {
+            return visitor.visitWhile(this);
+        }
+    }
 }
