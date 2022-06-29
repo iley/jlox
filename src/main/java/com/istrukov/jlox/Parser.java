@@ -56,6 +56,9 @@ class Parser {
        if (match(TokenType.PRINT)) {
            return printStatement();
        }
+       if (match(TokenType.IF)) {
+           return ifStatement();
+       }
        if (match(TokenType.LEFT_BRACE)) {
            return new Stmt.Block(block());
        }
@@ -68,6 +71,18 @@ class Parser {
        var expr = expression();
         consume(TokenType.SEMICOLON, "expected ; after expression in print");
        return new Stmt.Print(expr);
+    }
+
+    private Stmt.If ifStatement() {
+       consume(TokenType.LEFT_PAREN, "expected ( after if");
+       var condition = expression();
+       consume(TokenType.RIGHT_PAREN, "expected ) after if condition");
+       var thenBranch = statement();
+       if (match(TokenType.ELSE)) {
+           var elseBranch = statement();
+           return new Stmt.If(condition, thenBranch, elseBranch);
+       }
+       return new Stmt.If(condition, thenBranch);
     }
 
     private ImmutableList<Stmt> block() {

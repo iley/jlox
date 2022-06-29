@@ -29,4 +29,7 @@ interface Visitor<R> {
 
     @Nullable
     R visitBlock(Stmt.Block block);
+
+    @Nullable
+    R visitIf(Stmt.If anIf);
 }

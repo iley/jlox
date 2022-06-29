@@ -147,6 +147,18 @@ class Interpreter implements Visitor<Object> {
         return null;
     }
 
+    @Nullable
+    @Override
+    public Object visitIf(Stmt.If ifStmt) {
+        var conditionResult = eval(ifStmt.condition);
+        if (isTruthy(conditionResult)) {
+            execute(ifStmt.thenBranch);
+        } else if (ifStmt.elseBranch.isPresent()) {
+            execute(ifStmt.elseBranch.get());
+        }
+        return null;
+    }
+
     private boolean isTruthy(@Nullable Object value) {
         if (value == null) {
             return false;

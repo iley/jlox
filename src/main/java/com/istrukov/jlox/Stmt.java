@@ -59,4 +59,28 @@ abstract class Stmt extends AstNode {
             return visitor.visitBlock(this);
         }
     }
+
+    static class If extends Stmt {
+        final Expr condition;
+        final Stmt thenBranch;
+        final Optional<Stmt> elseBranch;
+
+        If(Expr condition, Stmt thenBranch) {
+            this.condition = condition;
+            this.thenBranch = thenBranch;
+            this.elseBranch = Optional.empty();
+        }
+
+        If(Expr condition, Stmt thenBranch, Stmt elseBranch) {
+            this.condition = condition;
+            this.thenBranch = thenBranch;
+            this.elseBranch = Optional.of(elseBranch);
+        }
+
+        @Nullable
+        @Override
+        <R> R accept(Visitor<R> visitor) {
+            return visitor.visitIf(this);
+        }
+    }
 }

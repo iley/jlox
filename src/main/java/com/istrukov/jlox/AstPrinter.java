@@ -65,6 +65,15 @@ class AstPrinter implements Visitor<String> {
         return parenthesize("block", block.statements);
     }
 
+    @Override
+    public String visitIf(Stmt.If ifStmt) {
+        if (ifStmt.elseBranch.isPresent()) {
+            return parenthesize("if", ifStmt.condition, ifStmt.thenBranch, ifStmt.elseBranch.get());
+        } else {
+            return parenthesize("if", ifStmt.condition, ifStmt.thenBranch);
+        }
+    }
+
     private <T extends AstNode> String parenthesize(String name, T... nodes) {
         return parenthesize(name, ImmutableList.copyOf(nodes));
     }
