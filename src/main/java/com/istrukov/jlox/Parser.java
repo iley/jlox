@@ -62,11 +62,19 @@ class Parser {
        if (match(TokenType.WHILE)) {
            return whileStatement();
        }
+       if (match(TokenType.FOR)) {
+           return forStatement();
+       }
        if (match(TokenType.LEFT_BRACE)) {
            return new Stmt.Block(block());
        }
-       var expr = expression();
+       var expr = expressionStatement();
        consume(TokenType.SEMICOLON, "expected ; after expression statement");
+       return expr;
+    }
+
+    private Stmt.Expression expressionStatement() {
+       var expr = expression();
        return new Stmt.Expression(expr);
     }
 
@@ -94,6 +102,35 @@ class Parser {
        consume(TokenType.RIGHT_PAREN, "expected ) after while condition");
        var body = statement();
        return new Stmt.While(condition, body);
+    }
+
+    private Stmt forStatement() {
+       consume(TokenType.LEFT_PAREN, "expected ( after for");
+       Optional<Stmt> init;
+       if (match(TokenType.SEMICOLON)) {
+           init = Optional.empty();
+       } else if (match(TokenType.VAR)) {
+           init = Optional.of(varDeclaration());
+       } else {
+           init = Optional.of(expressionStatement());
+       }
+       Optional<Expr> condition = check(TokenType.SEMICOLON) ? Optional.empty() : Optional.of(expression());
+       consume(TokenType.SEMICOLON, "expected ; after loop condition");
+       Optional<Expr> increment = check(TokenType.RIGHT_PAREN) ? Optional.empty() : Optional.of(expression());
+       consume(TokenType.RIGHT_PAREN, "expected ) in for loop");
+       var body = statement();
+       if (increment.isPresent()) {
+           body = new Stmt.Block(ImmutableList.of(body, new Stmt.Expression(increment.get())));
+       }
+       if (condition.isEmpty()) {
+           condition = Optional.of(new Expr.Literal(new Token.Literal(true)));
+       }
+       var whileLoop = new Stmt.While(condition.get(), body);
+       if (init.isPresent()) {
+           return new Stmt.Block(ImmutableList.of(init.get(), whileLoop));
+       } else {
+           return whileLoop;
+       }
     }
 
     private ImmutableList<Stmt> block() {

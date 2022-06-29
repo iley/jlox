@@ -26,6 +26,10 @@ class Environment {
             values.put(name.lexeme(), value);
             return;
         }
+        if (enclosing.isPresent()) {
+            enclosing.get().assign(name, value);
+            return;
+        }
         throw new RuntimeError(name, String.format("undefined variable %s", name.lexeme()));
     }
 

@@ -80,16 +80,16 @@ class Interpreter implements Visitor<Object> {
                 checkNumberOperands(binary.operator, left, right);
                 return (double)left * (double)right;
             case GREATER:
-                checkBooleanOperands(binary.operator, left, right);
+                checkNumberOperands(binary.operator, left, right);
                 return (double)left > (double)right;
             case GREATER_EQUAL:
-                checkBooleanOperands(binary.operator, left, right);
+                checkNumberOperands(binary.operator, left, right);
                 return (double)left >= (double)right;
             case LESS:
-                checkBooleanOperands(binary.operator, left, right);
+                checkNumberOperands(binary.operator, left, right);
                 return (double)left < (double)right;
             case LESS_EQUAL:
-                checkBooleanOperands(binary.operator, left, right);
+                checkNumberOperands(binary.operator, left, right);
                 return (double)left <= (double) right;
             case BANG_EQUAL:
                 return !isEqual(left, right);
