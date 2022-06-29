@@ -159,6 +159,22 @@ class Interpreter implements Visitor<Object> {
         return null;
     }
 
+    @Nullable
+    @Override
+    public Object visitLogical(Expr.Logical logical) {
+        var leftResult = eval(logical.left);
+        if (logical.operator.type() == TokenType.AND) {
+            if (!isTruthy((leftResult))) {
+                return false;
+            }
+        } else {
+            if (isTruthy(leftResult)) {
+                return true;
+            }
+        }
+        return eval(logical.right);
+    }
+
     private boolean isTruthy(@Nullable Object value) {
         if (value == null) {
             return false;

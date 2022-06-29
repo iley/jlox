@@ -32,4 +32,7 @@ interface Visitor<R> {
 
     @Nullable
     R visitIf(Stmt.If anIf);
+
+    @Nullable
+    R visitLogical(Expr.Logical logical);
 }

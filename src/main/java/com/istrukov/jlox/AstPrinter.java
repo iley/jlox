@@ -74,6 +74,11 @@ class AstPrinter implements Visitor<String> {
         }
     }
 
+    @Override
+    public String visitLogical(Expr.Logical logical) {
+        return parenthesize(logical.operator.lexeme(), logical.left, logical.right);
+    }
+
     private <T extends AstNode> String parenthesize(String name, T... nodes) {
         return parenthesize(name, ImmutableList.copyOf(nodes));
     }
