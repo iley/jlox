@@ -1,5 +1,7 @@
 package com.istrukov.jlox;
 
+import com.google.common.collect.ImmutableList;
+
 import javax.annotation.Nullable;
 
 abstract class Expr extends AstNode{
@@ -106,6 +108,24 @@ abstract class Expr extends AstNode{
         @Override
         <R> R accept(Visitor<R> visitor) {
             return visitor.visitLogical(this);
+        }
+    }
+
+    static class Call extends Expr {
+        final Expr callee;
+        final Token paren;
+        final ImmutableList<Expr> arguments;
+
+        Call(Expr callee, Token paren, ImmutableList<Expr> arguments) {
+            this.callee = callee;
+            this.paren = paren;
+            this.arguments = arguments;
+        }
+
+        @Nullable
+        @Override
+        <R> R accept(Visitor<R> visitor) {
+            return visitor.visitCall(this);
         }
     }
 }

@@ -38,4 +38,7 @@ interface Visitor<R> {
 
     @Nullable
     R visitWhile(Stmt.While aWhile);
+
+    @Nullable
+    R visitCall(Expr.Call call);
 }

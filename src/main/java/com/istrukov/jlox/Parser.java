@@ -229,7 +229,34 @@ class Parser {
             var right = unary();
             return new Expr.Unary(operator, right);
         }
-        return primary();
+        return call();
+    }
+
+    private Expr call() {
+       var expr = primary();
+       while (true) {
+           if (match(TokenType.LEFT_PAREN)) {
+               expr = finishCall(expr);
+           } else {
+               break;
+           }
+       }
+       return expr;
+    }
+
+    private Expr finishCall(Expr callee) {
+       var argsBuilder = ImmutableList.<Expr>builder();
+       if (!check(TokenType.RIGHT_PAREN)) {
+           do {
+               argsBuilder.add(expression());
+           } while (match(TokenType.COMMA));
+       }
+       Token paren = consume(TokenType.RIGHT_PAREN, "expected ) arfter arguments in function call");
+       var args = argsBuilder.build();
+       if (args.size() > 255) {
+           error(paren, "functions cannot have more than 255 arguments");
+       }
+       return new Expr.Call(callee, paren, args);
     }
 
     private Expr primary() {

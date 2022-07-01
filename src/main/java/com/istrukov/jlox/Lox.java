@@ -11,7 +11,7 @@ import java.nio.file.Paths;
 
 public class Lox {
     private static final boolean printTokens = false;
-    private static final boolean printAst = false;
+    private static final boolean printAst = true;
 
     private static boolean hadError = false;
     private static boolean hadRuntimeError = false;
@@ -58,6 +58,13 @@ public class Lox {
         }
         var parser = new Parser(tokens);
         var program = parser.parse();
+        if (printAst) {
+            var printer = new AstPrinter();
+            for (var stmt : program) {
+                var stmtLine = printer.print(stmt);
+                System.out.println(stmtLine);
+            }
+        }
         if (hadError) {
             return;
         }

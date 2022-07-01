@@ -6,8 +6,8 @@ import javax.annotation.Nullable;
 
 class AstPrinter implements Visitor<String> {
     @Nullable
-    String print(Expr expr) {
-        return expr.accept(this);
+    String print(AstNode node) {
+        return node.accept(this);
     }
 
     @Override
@@ -82,6 +82,11 @@ class AstPrinter implements Visitor<String> {
     @Override
     public String visitWhile(Stmt.While whileLoop) {
         return parenthesize("while", whileLoop.body);
+    }
+
+    @Override
+    public String visitCall(Expr.Call call) {
+        return parenthesize("call", ImmutableList.<AstNode>builder().add(call.callee).addAll(call.arguments).build());
     }
 
     private <T extends AstNode> String parenthesize(String name, T... nodes) {

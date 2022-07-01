@@ -184,6 +184,18 @@ class Interpreter implements Visitor<Object> {
         return null;
     }
 
+    @Nullable
+    @Override
+    public Object visitCall(Expr.Call call) {
+        Object callee = eval(call.callee);
+        if (!(callee instanceof LoxCallable)) {
+            throw new RuntimeError(call.paren, "can only call functions and classes");
+        }
+        var args = call.arguments.stream().map(arg -> eval(arg)).collect(ImmutableList.toImmutableList());
+        var callable = (LoxCallable)callee;
+        return callable.call(this, args);
+    }
+
     private boolean isTruthy(@Nullable Object value) {
         if (value == null) {
             return false;
@@ -216,21 +228,6 @@ class Interpreter implements Visitor<Object> {
     private void checkNumberOperand(Token operator, @Nullable Object operand) {
         if (!(operand instanceof Double)) {
             throw new RuntimeError(operator, "operand must be a number");
-        }
-    }
-
-    private void checkBooleanOperand(Token operator, @Nullable Object operand) {
-        if (!(operand instanceof Boolean)) {
-            throw new RuntimeError(operator, "operand must be a boolean");
-        }
-    }
-
-    private void checkBooleanOperands(Token operator, @Nullable Object left, @Nullable Object right) {
-        if (!(left instanceof Boolean)) {
-            throw new RuntimeError(operator, "left operand must be a boolean");
-        }
-        if (!(right instanceof Boolean)) {
-            throw new RuntimeError(operator, "right operand must be a boolean");
         }
     }
 
