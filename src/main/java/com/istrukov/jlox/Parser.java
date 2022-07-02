@@ -40,6 +40,9 @@ class Parser {
             if (match(TokenType.VAR)) {
                 return Optional.of(varDeclaration());
             }
+            if (match(TokenType.FUN)) {
+                return Optional.of(functionDeclaration());
+            }
             return Optional.of(statement());
         } catch (ParseError error) {
             synchronize();
@@ -52,6 +55,25 @@ class Parser {
         Optional<Expr> initializer = match(TokenType.EQUAL) ? Optional.of(expression()) : Optional.empty();
         consume(TokenType.SEMICOLON, "expected semicolon after variable declaration");
         return new Stmt.VariableDeclaration(name, initializer);
+    }
+
+    private Stmt functionDeclaration() {
+        var name = consume(TokenType.IDENTIFIER, "expected a function name in declaration");
+        consume(TokenType.LEFT_PAREN, "expected ( after function name");
+        var paramsBuilder = ImmutableList.<Token>builder();
+        if (!check(TokenType.RIGHT_PAREN)) {
+            do {
+                paramsBuilder.add(consume(TokenType.IDENTIFIER, "expected a parameter name"));
+            } while (match(TokenType.COMMA));
+        }
+        var params = paramsBuilder.build();
+        if (params.size() > 255) {
+            error(peek(), "function cannot have more than 255 parameters");
+        }
+        consume(TokenType.RIGHT_PAREN, "expected ) after function parameters");
+        consume(TokenType.LEFT_BRACE, "expected { in function declaration");
+        var body = block();
+        return new Stmt.Function(name, params, body);
     }
 
     private Stmt statement() {

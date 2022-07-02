@@ -1,0 +1,29 @@
+package com.istrukov.jlox;
+
+import com.google.common.collect.ImmutableList;
+
+import javax.annotation.Nullable;
+
+public class LoxFunction implements LoxCallable {
+    private final Stmt.Function declaration;
+
+    public LoxFunction(Stmt.Function declaration) {
+        this.declaration = declaration;
+    }
+
+    @Override
+    public int arity() {
+        return declaration.params.size();
+    }
+
+    @Nullable
+    @Override
+    public Object call(Interpreter interpreter, ImmutableList<Object> arguments) {
+        var locals = new Environment(interpreter.globals);
+        for (int i = 0; i < declaration.params.size(); i++) {
+            locals.define(declaration.params.get(i).lexeme(), arguments.get(i));
+        }
+        interpreter.executeBlock(declaration.body, locals);
+        return null;
+    }
+}

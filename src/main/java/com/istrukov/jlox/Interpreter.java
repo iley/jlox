@@ -5,7 +5,7 @@ import com.google.common.collect.ImmutableList;
 import javax.annotation.Nullable;
 
 class Interpreter implements Visitor<Object> {
-    private Environment globals = new Environment();
+    Environment globals = new Environment();
     private Environment environment = globals;
 
     Interpreter() {
@@ -226,6 +226,13 @@ class Interpreter implements Visitor<Object> {
             return (boolean) value;
         }
         return true;
+    }
+
+    @Nullable
+    @Override
+    public Object visitFunction(Stmt.Function fun) {
+        environment.define(fun.name.lexeme(), new LoxFunction(fun));
+        return null;
     }
 
     private boolean isEqual(@Nullable Object left, @Nullable Object right) {

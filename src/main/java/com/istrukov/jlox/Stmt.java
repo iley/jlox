@@ -15,7 +15,9 @@ abstract class Stmt extends AstNode {
 
         @Nullable
         @Override
-        <R> R accept(Visitor<R> visitor) { return visitor.visitExpression(this); }
+        <R> R accept(Visitor<R> visitor) {
+            return visitor.visitExpression(this);
+        }
     }
 
     static class Print extends Stmt {
@@ -27,7 +29,9 @@ abstract class Stmt extends AstNode {
 
         @Nullable
         @Override
-        <R> R accept(Visitor<R> visitor) { return visitor.visitPrint(this); }
+        <R> R accept(Visitor<R> visitor) {
+            return visitor.visitPrint(this);
+        }
     }
 
     static class VariableDeclaration extends Stmt {
@@ -97,6 +101,24 @@ abstract class Stmt extends AstNode {
         @Override
         <R> R accept(Visitor<R> visitor) {
             return visitor.visitWhile(this);
+        }
+    }
+
+    static class Function extends Stmt {
+        final Token name;
+        final ImmutableList<Token> params;
+        final ImmutableList<Stmt> body;
+
+        Function(Token name, ImmutableList<Token> params, ImmutableList<Stmt> body) {
+            this.name = name;
+            this.params = params;
+            this.body = body;
+        }
+
+        @Nullable
+        @Override
+        <R> R accept(Visitor<R> visitor) {
+            return visitor.visitFunction(this);
         }
     }
 }

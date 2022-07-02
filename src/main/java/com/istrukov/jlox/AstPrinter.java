@@ -3,6 +3,7 @@ package com.istrukov.jlox;
 import com.google.common.collect.ImmutableList;
 
 import javax.annotation.Nullable;
+import java.util.stream.Collectors;
 
 class AstPrinter implements Visitor<String> {
     @Nullable
@@ -87,6 +88,12 @@ class AstPrinter implements Visitor<String> {
     @Override
     public String visitCall(Expr.Call call) {
         return parenthesize("call", ImmutableList.<AstNode>builder().add(call.callee).addAll(call.arguments).build());
+    }
+
+    @Override
+    public String visitFunction(Stmt.Function fun) {
+        var body = fun.body.stream().map(stmt -> print(stmt)).collect(Collectors.joining(" "));
+        return String.format("(fun %s %s)", fun.name.lexeme(), body);
     }
 
     @SuppressWarnings("unchecked")
