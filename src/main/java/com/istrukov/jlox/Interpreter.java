@@ -231,7 +231,7 @@ class Interpreter implements Visitor<Object> {
     @Nullable
     @Override
     public Object visitFunction(Stmt.Function fun) {
-        environment.define(fun.name.lexeme(), new LoxFunction(fun));
+        environment.define(fun.name.lexeme(), new LoxFunction(fun, environment));
         return null;
     }
 

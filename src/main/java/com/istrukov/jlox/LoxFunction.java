@@ -6,9 +6,11 @@ import javax.annotation.Nullable;
 
 public class LoxFunction implements LoxCallable {
     private final Stmt.Function declaration;
+    private final Environment closure;
 
-    public LoxFunction(Stmt.Function declaration) {
+    public LoxFunction(Stmt.Function declaration, Environment closure) {
         this.declaration = declaration;
+        this.closure = closure;
     }
 
     @Override
@@ -19,7 +21,7 @@ public class LoxFunction implements LoxCallable {
     @Nullable
     @Override
     public Object call(Interpreter interpreter, ImmutableList<Object> arguments) {
-        var locals = new Environment(interpreter.globals);
+        var locals = new Environment(closure);
         for (int i = 0; i < declaration.params.size(); i++) {
             locals.define(declaration.params.get(i).lexeme(), arguments.get(i));
         }
