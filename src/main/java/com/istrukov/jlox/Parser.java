@@ -89,6 +89,9 @@ class Parser {
         if (match(TokenType.FOR)) {
             return forStatement();
         }
+        if (match(TokenType.RETURN)) {
+            return returnStatement();
+        }
         if (match(TokenType.LEFT_BRACE)) {
             return new Stmt.Block(block());
         }
@@ -155,6 +158,13 @@ class Parser {
         } else {
             return whileLoop;
         }
+    }
+
+    private Stmt returnStatement() {
+        var keyword = previous();
+        Optional<Expr> value = check(TokenType.SEMICOLON) ? Optional.empty() : Optional.of(expression());
+        consume(TokenType.SEMICOLON, "expected ; after return statement");
+        return new Stmt.Return(keyword, value);
     }
 
     private ImmutableList<Stmt> block() {

@@ -23,7 +23,11 @@ public class LoxFunction implements LoxCallable {
         for (int i = 0; i < declaration.params.size(); i++) {
             locals.define(declaration.params.get(i).lexeme(), arguments.get(i));
         }
-        interpreter.executeBlock(declaration.body, locals);
+        try {
+            interpreter.executeBlock(declaration.body, locals);
+        } catch (Return ret) {
+            return ret.value;
+        }
         return null;
     }
 }

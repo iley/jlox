@@ -47,4 +47,7 @@ interface Visitor<R> {
 
     @Nullable
     R visitFunction(Stmt.Function function);
+
+    @Nullable
+    R visitReturn(Stmt.Return aReturn);
 }

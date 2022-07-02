@@ -121,4 +121,20 @@ abstract class Stmt extends AstNode {
             return visitor.visitFunction(this);
         }
     }
+
+    static class Return extends Stmt {
+        final Token keyword;
+        final Optional<Expr> value;
+
+        Return(Token keyword, Optional<Expr> value) {
+            this.keyword = keyword;
+            this.value = value;
+        }
+
+        @Nullable
+        @Override
+        <R> R accept(Visitor<R> visitor) {
+            return visitor.visitReturn(this);
+        }
+    }
 }

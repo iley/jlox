@@ -96,6 +96,14 @@ class AstPrinter implements Visitor<String> {
         return String.format("(fun %s %s)", fun.name.lexeme(), body);
     }
 
+    @Override
+    public String visitReturn(Stmt.Return ret) {
+        if (ret.value.isPresent()) {
+            return parenthesize(ret.keyword.lexeme(), ret.value.get());
+        }
+        return parenthesize(ret.keyword.lexeme());
+    }
+
     @SuppressWarnings("unchecked")
     private <T extends AstNode> String parenthesize(String name, T... nodes) {
         return parenthesize(name, ImmutableList.copyOf(nodes));

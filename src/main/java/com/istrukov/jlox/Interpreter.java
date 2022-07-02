@@ -235,6 +235,16 @@ class Interpreter implements Visitor<Object> {
         return null;
     }
 
+    @Nullable
+    @Override
+    public Object visitReturn(Stmt.Return ret) {
+        if (ret.value.isPresent()) {
+            var value = eval(ret.value.get());
+            throw new Return(value);
+        }
+        throw new Return(null);
+    }
+
     private boolean isEqual(@Nullable Object left, @Nullable Object right) {
         if (left == null && right == null) {
             return true;
