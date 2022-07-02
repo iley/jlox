@@ -5,7 +5,26 @@ import com.google.common.collect.ImmutableList;
 import javax.annotation.Nullable;
 
 class Interpreter implements Visitor<Object> {
-    private Environment environment = new Environment();
+    private Environment globals = new Environment();
+    private Environment environment = globals;
+
+    Interpreter() {
+        globals.define("clock", Builtin.clock);
+    }
+
+    private static String stringify(@Nullable Object object) {
+        if (object == null) {
+            return "nil";
+        }
+        if (object instanceof Double) {
+            String text = object.toString();
+            if (text.endsWith(".0")) {
+                text = text.substring(0, text.length() - 2);
+            }
+            return text;
+        }
+        return object.toString();
+    }
 
     void interpret(ImmutableList<Stmt> program) {
         try {
@@ -29,7 +48,7 @@ class Interpreter implements Visitor<Object> {
     @Nullable
     @Override
     public Object visitVar(Stmt.VariableDeclaration variableDeclaration) {
-        Object value = variableDeclaration.initializer.isPresent() ? eval(variableDeclaration.initializer.get()) : null;
+        Object value = variableDeclaration.initializer.map(this::eval).orElse(null);
         environment.define(variableDeclaration.name.lexeme(), value);
         return null;
     }
@@ -65,32 +84,32 @@ class Interpreter implements Visitor<Object> {
         switch (binary.operator.type()) {
             case PLUS:
                 if (left instanceof Double && right instanceof Double) {
-                    return (double)left + (double)right;
+                    return (double) left + (double) right;
                 } else if (left instanceof String && right instanceof String) {
-                    return (String)left + (String)right;
+                    return (String) left + (String) right;
                 }
                 throw new RuntimeError(binary.operator, "operands must be either two numbers or two strings");
             case MINUS:
                 checkNumberOperands(binary.operator, left, right);
-                return (double)left - (double)right;
+                return (double) left - (double) right;
             case SLASH:
                 checkNumberOperands(binary.operator, left, right);
-                return (double)left / (double)right;
+                return (double) left / (double) right;
             case STAR:
                 checkNumberOperands(binary.operator, left, right);
-                return (double)left * (double)right;
+                return (double) left * (double) right;
             case GREATER:
                 checkNumberOperands(binary.operator, left, right);
-                return (double)left > (double)right;
+                return (double) left > (double) right;
             case GREATER_EQUAL:
                 checkNumberOperands(binary.operator, left, right);
-                return (double)left >= (double)right;
+                return (double) left >= (double) right;
             case LESS:
                 checkNumberOperands(binary.operator, left, right);
-                return (double)left < (double)right;
+                return (double) left < (double) right;
             case LESS_EQUAL:
                 checkNumberOperands(binary.operator, left, right);
-                return (double)left <= (double) right;
+                return (double) left <= (double) right;
             case BANG_EQUAL:
                 return !isEqual(left, right);
             case EQUAL_EQUAL:
@@ -121,8 +140,8 @@ class Interpreter implements Visitor<Object> {
         var right = eval(unary.right);
         switch (unary.operator.type()) {
             case MINUS:
-                checkNumberOperand(unary.operator,right);
-                return -(double)right;
+                checkNumberOperand(unary.operator, right);
+                return -(double) right;
             case BANG:
                 return !isTruthy(right);
             default:
@@ -178,7 +197,7 @@ class Interpreter implements Visitor<Object> {
     @Nullable
     @Override
     public Object visitWhile(Stmt.While whileLoop) {
-        while(isTruthy(eval(whileLoop.condition))) {
+        while (isTruthy(eval(whileLoop.condition))) {
             execute(whileLoop.body);
         }
         return null;
@@ -188,11 +207,13 @@ class Interpreter implements Visitor<Object> {
     @Override
     public Object visitCall(Expr.Call call) {
         Object callee = eval(call.callee);
-        if (!(callee instanceof LoxCallable)) {
+        if (!(callee instanceof LoxCallable callable)) {
             throw new RuntimeError(call.paren, "can only call functions and classes");
         }
-        var args = call.arguments.stream().map(arg -> eval(arg)).collect(ImmutableList.toImmutableList());
-        var callable = (LoxCallable)callee;
+        var args = call.arguments.stream().map(this::eval).collect(ImmutableList.toImmutableList());
+        if (args.size() != callable.arity()) {
+            throw new RuntimeError(call.paren, String.format("wrong number of arguments in a function call, expected %d, got %d", callable.arity(), args.size()));
+        }
         return callable.call(this, args);
     }
 
@@ -201,7 +222,7 @@ class Interpreter implements Visitor<Object> {
             return false;
         }
         if (value instanceof Boolean) {
-            return (boolean)value;
+            return (boolean) value;
         }
         return true;
     }
@@ -229,20 +250,6 @@ class Interpreter implements Visitor<Object> {
         if (!(operand instanceof Double)) {
             throw new RuntimeError(operator, "operand must be a number");
         }
-    }
-
-    private static String stringify(@Nullable Object object) {
-        if (object == null) {
-            return "nil";
-        }
-        if (object instanceof Double) {
-            String text = object.toString();
-            if (text.endsWith(".0")) {
-                text = text.substring(0, text.length()-2);
-            }
-            return text;
-        }
-        return object.toString();
     }
 
     void executeBlock(ImmutableList<Stmt> statements, Environment environment) {
