@@ -1,0 +1,2 @@
+#!/bin/sh
+java -jar target/jlox-1.0-SNAPSHOT-jar-with-dependencies.jar $@

@@ -8,6 +8,7 @@ public record Token(
         Optional<Literal> literal,
         int line
 ) {
+    @Override
     public String toString() {
         if (literal.isPresent()) {
             return String.format("%s %s %s", type, lexeme, literal.get());
@@ -78,6 +79,7 @@ public record Token(
             return booleanValue.get();
         }
 
+        @Override
         public String toString() {
             if (isString()) {
                 return asString();

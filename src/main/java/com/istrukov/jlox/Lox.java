@@ -6,12 +6,13 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
 public class Lox {
     private static final boolean printTokens = false;
-    private static final boolean printAst = true;
+    private static final boolean printAst = false;
 
     private static boolean hadError = false;
     private static boolean hadRuntimeError = false;
@@ -36,7 +37,7 @@ public class Lox {
     }
 
     private static void runPrompt() throws IOException {
-        var input = new InputStreamReader(System.in);
+        var input = new InputStreamReader(System.in, StandardCharsets.UTF_8);
         var reader = new BufferedReader(input);
         while (true) {
             System.out.print("> ");

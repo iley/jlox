@@ -114,8 +114,9 @@ class Interpreter implements Visitor<Object> {
                 return !isEqual(left, right);
             case EQUAL_EQUAL:
                 return isEqual(left, right);
+            default:
+                return null;
         }
-        return null;
     }
 
     @Nullable
@@ -123,7 +124,7 @@ class Interpreter implements Visitor<Object> {
     public Object visitLogical(Expr.Logical logical) {
         var leftResult = eval(logical.left);
         if (logical.operator.type() == TokenType.AND) {
-            if (!isTruthy((leftResult))) {
+            if (!isTruthy(leftResult)) {
                 return false;
             }
         } else {

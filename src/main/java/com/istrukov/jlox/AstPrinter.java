@@ -11,7 +11,7 @@ class AstPrinter implements Visitor<String> {
     }
 
     @Override
-   public String visitBinary(Expr.Binary binary) {
+    public String visitBinary(Expr.Binary binary) {
         return parenthesize(binary.operator.lexeme(), binary.left, binary.right);
     }
 
@@ -89,6 +89,7 @@ class AstPrinter implements Visitor<String> {
         return parenthesize("call", ImmutableList.<AstNode>builder().add(call.callee).addAll(call.arguments).build());
     }
 
+    @SuppressWarnings("unchecked")
     private <T extends AstNode> String parenthesize(String name, T... nodes) {
         return parenthesize(name, ImmutableList.copyOf(nodes));
     }

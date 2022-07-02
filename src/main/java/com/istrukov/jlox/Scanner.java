@@ -79,7 +79,7 @@ public class Scanner {
                 addToken(TokenType.STAR);
                 break;
             case '!':
-                addToken(match('=') ? TokenType.BANG_EQUAL: TokenType.BANG);
+                addToken(match('=') ? TokenType.BANG_EQUAL : TokenType.BANG);
                 break;
             case '=':
                 addToken(match('=') ? TokenType.EQUAL_EQUAL : TokenType.EQUAL);
@@ -137,7 +137,7 @@ public class Scanner {
         }
     }
 
-    private  void scanString() {
+    private void scanString() {
         while (peek() != '"' && !isAtEnd()) {
             if (peek() == '\n') {
                 line++;
@@ -149,7 +149,7 @@ public class Scanner {
             return;
         }
         advance(); // terminating '"'
-        var value = input.substring(start+1, current-1);
+        var value = input.substring(start + 1, current - 1);
         addToken(TokenType.STRING, new Token.Literal(value));
     }
 
@@ -204,10 +204,10 @@ public class Scanner {
     }
 
     private char peekNext() {
-        if (current+1 >= input.length()) {
+        if (current + 1 >= input.length()) {
             return '\0';
         }
-        return input.charAt(current+1);
+        return input.charAt(current + 1);
     }
 
     private void addToken(TokenType type) {
@@ -229,7 +229,7 @@ public class Scanner {
     }
 
     private static boolean isAlpha(char c) {
-        return 'a' <= c && c <= 'z' || 'A' <= c && c <= 'Z' || c == '_';
+        return ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z') || c == '_';
     }
 
     private static boolean isAlphanumeric(char c) {

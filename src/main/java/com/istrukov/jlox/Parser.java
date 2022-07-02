@@ -5,144 +5,146 @@ import com.google.common.collect.ImmutableList;
 import java.util.Optional;
 
 class Parser {
-    private static class ParseError extends RuntimeException {}
+    @SuppressWarnings("serial")
+    private static class ParseError extends RuntimeException {
+    }
 
     private final ImmutableList<Token> tokens;
     private int current = 0;
 
-   Parser(ImmutableList<Token> tokens) {
+    Parser(ImmutableList<Token> tokens) {
         this.tokens = tokens;
     }
 
     ImmutableList<Stmt> parse() {
-       try {
-           return program();
-       } catch (ParseError error) {
-           return ImmutableList.of();
-       }
+        try {
+            return program();
+        } catch (ParseError error) {
+            return ImmutableList.of();
+        }
     }
 
     private ImmutableList<Stmt> program() {
-       var builder = ImmutableList.<Stmt>builder();
-       while (!isAtEnd()) {
-           var decl = declaration();
-           if (decl.isPresent()) {
-               builder.add(decl.get());
-           }
-       }
-       return builder.build();
+        var builder = ImmutableList.<Stmt>builder();
+        while (!isAtEnd()) {
+            var decl = declaration();
+            if (decl.isPresent()) {
+                builder.add(decl.get());
+            }
+        }
+        return builder.build();
     }
 
     private Optional<Stmt> declaration() {
-       try {
-           if (match(TokenType.VAR)) {
-               return Optional.of(varDeclaration());
-           }
-           return Optional.of(statement());
-       } catch (ParseError error) {
-           synchronize();
-           return Optional.empty();
-       }
+        try {
+            if (match(TokenType.VAR)) {
+                return Optional.of(varDeclaration());
+            }
+            return Optional.of(statement());
+        } catch (ParseError error) {
+            synchronize();
+            return Optional.empty();
+        }
     }
 
     private Stmt varDeclaration() {
-       var name = consume(TokenType.IDENTIFIER, "expected an identifier in a variable declaration");
-       Optional<Expr> initializer = match(TokenType.EQUAL) ? Optional.of(expression()) : Optional.empty();
-       consume(TokenType.SEMICOLON, "expected semicolon after variable declaration");
-       return new Stmt.VariableDeclaration(name, initializer);
+        var name = consume(TokenType.IDENTIFIER, "expected an identifier in a variable declaration");
+        Optional<Expr> initializer = match(TokenType.EQUAL) ? Optional.of(expression()) : Optional.empty();
+        consume(TokenType.SEMICOLON, "expected semicolon after variable declaration");
+        return new Stmt.VariableDeclaration(name, initializer);
     }
 
     private Stmt statement() {
-       if (match(TokenType.PRINT)) {
-           return printStatement();
-       }
-       if (match(TokenType.IF)) {
-           return ifStatement();
-       }
-       if (match(TokenType.WHILE)) {
-           return whileStatement();
-       }
-       if (match(TokenType.FOR)) {
-           return forStatement();
-       }
-       if (match(TokenType.LEFT_BRACE)) {
-           return new Stmt.Block(block());
-       }
-       var expr = expressionStatement();
-       consume(TokenType.SEMICOLON, "expected ; after expression statement");
-       return expr;
+        if (match(TokenType.PRINT)) {
+            return printStatement();
+        }
+        if (match(TokenType.IF)) {
+            return ifStatement();
+        }
+        if (match(TokenType.WHILE)) {
+            return whileStatement();
+        }
+        if (match(TokenType.FOR)) {
+            return forStatement();
+        }
+        if (match(TokenType.LEFT_BRACE)) {
+            return new Stmt.Block(block());
+        }
+        var expr = expressionStatement();
+        consume(TokenType.SEMICOLON, "expected ; after expression statement");
+        return expr;
     }
 
     private Stmt.Expression expressionStatement() {
-       var expr = expression();
-       return new Stmt.Expression(expr);
+        var expr = expression();
+        return new Stmt.Expression(expr);
     }
 
     private Stmt printStatement() {
-       var expr = expression();
+        var expr = expression();
         consume(TokenType.SEMICOLON, "expected ; after expression in print");
-       return new Stmt.Print(expr);
+        return new Stmt.Print(expr);
     }
 
     private Stmt.If ifStatement() {
-       consume(TokenType.LEFT_PAREN, "expected ( after if");
-       var condition = expression();
-       consume(TokenType.RIGHT_PAREN, "expected ) after if condition");
-       var thenBranch = statement();
-       if (match(TokenType.ELSE)) {
-           var elseBranch = statement();
-           return new Stmt.If(condition, thenBranch, elseBranch);
-       }
-       return new Stmt.If(condition, thenBranch);
+        consume(TokenType.LEFT_PAREN, "expected ( after if");
+        var condition = expression();
+        consume(TokenType.RIGHT_PAREN, "expected ) after if condition");
+        var thenBranch = statement();
+        if (match(TokenType.ELSE)) {
+            var elseBranch = statement();
+            return new Stmt.If(condition, thenBranch, elseBranch);
+        }
+        return new Stmt.If(condition, thenBranch);
     }
 
     private Stmt.While whileStatement() {
-       consume(TokenType.LEFT_PAREN, "expected ( after while");
-       var condition = expression();
-       consume(TokenType.RIGHT_PAREN, "expected ) after while condition");
-       var body = statement();
-       return new Stmt.While(condition, body);
+        consume(TokenType.LEFT_PAREN, "expected ( after while");
+        var condition = expression();
+        consume(TokenType.RIGHT_PAREN, "expected ) after while condition");
+        var body = statement();
+        return new Stmt.While(condition, body);
     }
 
     private Stmt forStatement() {
-       consume(TokenType.LEFT_PAREN, "expected ( after for");
-       Optional<Stmt> init;
-       if (match(TokenType.SEMICOLON)) {
-           init = Optional.empty();
-       } else if (match(TokenType.VAR)) {
-           init = Optional.of(varDeclaration());
-       } else {
-           init = Optional.of(expressionStatement());
-       }
-       Optional<Expr> condition = check(TokenType.SEMICOLON) ? Optional.empty() : Optional.of(expression());
-       consume(TokenType.SEMICOLON, "expected ; after loop condition");
-       Optional<Expr> increment = check(TokenType.RIGHT_PAREN) ? Optional.empty() : Optional.of(expression());
-       consume(TokenType.RIGHT_PAREN, "expected ) in for loop");
-       var body = statement();
-       if (increment.isPresent()) {
-           body = new Stmt.Block(ImmutableList.of(body, new Stmt.Expression(increment.get())));
-       }
-       if (condition.isEmpty()) {
-           condition = Optional.of(new Expr.Literal(new Token.Literal(true)));
-       }
-       var whileLoop = new Stmt.While(condition.get(), body);
-       if (init.isPresent()) {
-           return new Stmt.Block(ImmutableList.of(init.get(), whileLoop));
-       } else {
-           return whileLoop;
-       }
+        consume(TokenType.LEFT_PAREN, "expected ( after for");
+        Optional<Stmt> init;
+        if (match(TokenType.SEMICOLON)) {
+            init = Optional.empty();
+        } else if (match(TokenType.VAR)) {
+            init = Optional.of(varDeclaration());
+        } else {
+            init = Optional.of(expressionStatement());
+        }
+        Optional<Expr> condition = check(TokenType.SEMICOLON) ? Optional.empty() : Optional.of(expression());
+        consume(TokenType.SEMICOLON, "expected ; after loop condition");
+        Optional<Expr> increment = check(TokenType.RIGHT_PAREN) ? Optional.empty() : Optional.of(expression());
+        consume(TokenType.RIGHT_PAREN, "expected ) in for loop");
+        var body = statement();
+        if (increment.isPresent()) {
+            body = new Stmt.Block(ImmutableList.of(body, new Stmt.Expression(increment.get())));
+        }
+        if (condition.isEmpty()) {
+            condition = Optional.of(new Expr.Literal(new Token.Literal(true)));
+        }
+        var whileLoop = new Stmt.While(condition.get(), body);
+        if (init.isPresent()) {
+            return new Stmt.Block(ImmutableList.of(init.get(), whileLoop));
+        } else {
+            return whileLoop;
+        }
     }
 
     private ImmutableList<Stmt> block() {
-       var builder = ImmutableList.<Stmt>builder();
-       while (!check(TokenType.RIGHT_BRACE) && !isAtEnd()) {
-           var decl = declaration();
-           if (decl.isPresent()) {
-               builder.add(decl.get());
-           }
-       }
-       consume(TokenType.RIGHT_BRACE, "expected } at the end of a block");
-       return builder.build();
+        var builder = ImmutableList.<Stmt>builder();
+        while (!check(TokenType.RIGHT_BRACE) && !isAtEnd()) {
+            var decl = declaration();
+            if (decl.isPresent()) {
+                builder.add(decl.get());
+            }
+        }
+        consume(TokenType.RIGHT_BRACE, "expected } at the end of a block");
+        return builder.build();
     }
 
     private Expr expression() {
@@ -150,27 +152,27 @@ class Parser {
     }
 
     private Expr assignment() {
-       var expr = or();
-       if (match(TokenType.EQUAL)) {
-           var equals = previous();
-           var value = assignment();
-           if (expr instanceof Expr.VariableReference) {
-               var name = ((Expr.VariableReference)expr).name;
-               return new Expr.Assignment(name, value);
-           }
-           error(equals, "invalid assignment target");
-       }
-       return expr;
+        var expr = or();
+        if (match(TokenType.EQUAL)) {
+            var equals = previous();
+            var value = assignment();
+            if (expr instanceof Expr.VariableReference) {
+                var name = ((Expr.VariableReference) expr).name;
+                return new Expr.Assignment(name, value);
+            }
+            error(equals, "invalid assignment target");
+        }
+        return expr;
     }
 
     private Expr or() {
-       Expr expr = and();
-       while (match(TokenType.OR)) {
-           var operator = previous();
-           var right = and();
-           expr = new Expr.Logical(expr, operator, right);
-       }
-       return expr;
+        Expr expr = and();
+        while (match(TokenType.OR)) {
+            var operator = previous();
+            var right = and();
+            expr = new Expr.Logical(expr, operator, right);
+        }
+        return expr;
     }
 
     private Expr and() {
@@ -204,13 +206,13 @@ class Parser {
     }
 
     private Expr term() {
-         var expr = factor();
-         while (match(TokenType.MINUS, TokenType.PLUS)) {
-             var operator = previous();
-             var right = factor();
-             expr = new Expr.Binary(expr, operator, right);
-         }
-         return expr;
+        var expr = factor();
+        while (match(TokenType.MINUS, TokenType.PLUS)) {
+            var operator = previous();
+            var right = factor();
+            expr = new Expr.Binary(expr, operator, right);
+        }
+        return expr;
     }
 
     private Expr factor() {
@@ -233,30 +235,30 @@ class Parser {
     }
 
     private Expr call() {
-       var expr = primary();
-       while (true) {
-           if (match(TokenType.LEFT_PAREN)) {
-               expr = finishCall(expr);
-           } else {
-               break;
-           }
-       }
-       return expr;
+        var expr = primary();
+        while (true) {
+            if (match(TokenType.LEFT_PAREN)) {
+                expr = finishCall(expr);
+            } else {
+                break;
+            }
+        }
+        return expr;
     }
 
     private Expr finishCall(Expr callee) {
-       var argsBuilder = ImmutableList.<Expr>builder();
-       if (!check(TokenType.RIGHT_PAREN)) {
-           do {
-               argsBuilder.add(expression());
-           } while (match(TokenType.COMMA));
-       }
-       Token paren = consume(TokenType.RIGHT_PAREN, "expected ) arfter arguments in function call");
-       var args = argsBuilder.build();
-       if (args.size() > 255) {
-           error(paren, "functions cannot have more than 255 arguments");
-       }
-       return new Expr.Call(callee, paren, args);
+        var argsBuilder = ImmutableList.<Expr>builder();
+        if (!check(TokenType.RIGHT_PAREN)) {
+            do {
+                argsBuilder.add(expression());
+            } while (match(TokenType.COMMA));
+        }
+        Token paren = consume(TokenType.RIGHT_PAREN, "expected ) arfter arguments in function call");
+        var args = argsBuilder.build();
+        if (args.size() > 255) {
+            error(paren, "functions cannot have more than 255 arguments");
+        }
+        return new Expr.Call(callee, paren, args);
     }
 
     private Expr primary() {
@@ -307,7 +309,7 @@ class Parser {
     }
 
     private Token previous() {
-        return tokens.get(current-1);
+        return tokens.get(current - 1);
     }
 
     private Token consume(TokenType type, String message) {
@@ -329,8 +331,16 @@ class Parser {
                 return;
             }
             switch (peek().type()) {
-                case CLASS: case FOR: case FUN: case IF: case PRINT: case RETURN: case VAR: case WHILE:
+                case CLASS:
+                case FOR:
+                case FUN:
+                case IF:
+                case PRINT:
+                case RETURN:
+                case VAR:
+                case WHILE:
                     return;
+                default:
             }
             advance();
         }
