@@ -1,0 +1,8 @@
+class Bagel {
+  eat() {
+    print "eating bagel";
+  }
+}
+
+var bagel = Bagel();
+print bagel;

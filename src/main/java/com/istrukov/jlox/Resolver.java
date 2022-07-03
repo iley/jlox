@@ -2,6 +2,7 @@ package com.istrukov.jlox;
 
 import com.google.common.collect.ImmutableList;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -202,6 +203,14 @@ public class Resolver implements Visitor<Void> {
         if (aReturn.value.isPresent()) {
             resolve(aReturn.value.get());
         }
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public Void visitClass(Stmt.Class aClass) {
+        declare(aClass.name);
+        define(aClass.name);
         return null;
     }
 }

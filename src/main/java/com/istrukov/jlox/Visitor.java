@@ -50,4 +50,7 @@ interface Visitor<R> {
 
     @Nullable
     R visitReturn(Stmt.Return aReturn);
+
+    @Nullable
+    R visitClass(Stmt.Class aClass);
 }

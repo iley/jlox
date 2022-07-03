@@ -43,6 +43,9 @@ class Parser {
             if (match(TokenType.FUN)) {
                 return Optional.of(functionDeclaration());
             }
+            if (match(TokenType.CLASS)) {
+                return Optional.of(classDeclaration());
+            }
             return Optional.of(statement());
         } catch (ParseError error) {
             synchronize();
@@ -50,14 +53,14 @@ class Parser {
         }
     }
 
-    private Stmt varDeclaration() {
+    private Stmt.VariableDeclaration varDeclaration() {
         var name = consume(TokenType.IDENTIFIER, "expected an identifier in a variable declaration");
         Optional<Expr> initializer = match(TokenType.EQUAL) ? Optional.of(expression()) : Optional.empty();
         consume(TokenType.SEMICOLON, "expected semicolon after variable declaration");
         return new Stmt.VariableDeclaration(name, initializer);
     }
 
-    private Stmt functionDeclaration() {
+    private Stmt.Function functionDeclaration() {
         var name = consume(TokenType.IDENTIFIER, "expected a function name in declaration");
         consume(TokenType.LEFT_PAREN, "expected ( after function name");
         var paramsBuilder = ImmutableList.<Token>builder();
@@ -74,6 +77,17 @@ class Parser {
         consume(TokenType.LEFT_BRACE, "expected { in function declaration");
         var body = block();
         return new Stmt.Function(name, params, body);
+    }
+
+    private Stmt.Class classDeclaration() {
+        var name = consume(TokenType.IDENTIFIER, "expected a class name in declaration");
+        consume(TokenType.LEFT_BRACE, "expected { in class declaration");
+        var methods = ImmutableList.<Stmt.Function>builder();
+        while (!check(TokenType.RIGHT_BRACE)) {
+            methods.add(functionDeclaration());
+        }
+        consume(TokenType.RIGHT_BRACE, "expected } after class body");
+        return new Stmt.Class(name, methods.build());
     }
 
     private Stmt statement() {

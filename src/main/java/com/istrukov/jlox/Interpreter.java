@@ -261,6 +261,15 @@ class Interpreter implements Visitor<Object> {
         throw new Return(null);
     }
 
+    @Nullable
+    @Override
+    public Object visitClass(Stmt.Class stmt) {
+        environment.define(stmt.name.lexeme(), null);
+        var klass = new LoxClass(stmt.name.lexeme());
+        environment.assign(stmt.name, klass);
+        return null;
+    }
+
     private boolean isEqual(@Nullable Object left, @Nullable Object right) {
         if (left == null && right == null) {
             return true;

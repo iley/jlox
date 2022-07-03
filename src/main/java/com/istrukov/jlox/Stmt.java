@@ -137,4 +137,21 @@ abstract class Stmt extends AstNode {
             return visitor.visitReturn(this);
         }
     }
+
+    @SuppressWarnings("JavaLangClash")
+    static class Class extends Stmt {
+        final Token name;
+        final ImmutableList<Stmt.Function> methods;
+
+        Class(Token name, ImmutableList<Function> methods) {
+            this.name = name;
+            this.methods = methods;
+        }
+
+        @Nullable
+        @Override
+        <R> R accept(Visitor<R> visitor) {
+            return visitor.visitClass(this);
+        }
+    }
 }
