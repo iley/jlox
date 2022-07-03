@@ -1,6 +1,7 @@
 package com.istrukov.jlox;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;
@@ -265,7 +266,12 @@ class Interpreter implements Visitor<Object> {
     @Override
     public Object visitClass(Stmt.Class stmt) {
         environment.define(stmt.name.lexeme(), null);
-        var klass = new LoxClass(stmt.name.lexeme());
+        var methodsBuilder = ImmutableMap.<String, LoxFunction>builder();
+        for (var method : stmt.methods) {
+            var function = new LoxFunction(method, environment);
+            methodsBuilder.put(method.name.lexeme(), function);
+        }
+        var klass = new LoxClass(stmt.name.lexeme(), methodsBuilder.build());
         environment.assign(stmt.name, klass);
         return null;
     }

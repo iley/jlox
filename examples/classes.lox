@@ -8,3 +8,11 @@ var bagel = Bagel();
 bagel.foo = "foo";
 bagel.bar = "bar";
 print bagel.foo + bagel.bar;
+
+fun f() {
+  print "f";
+}
+bagel.f = f;
+bagel.f();
+
+bagel.eat();

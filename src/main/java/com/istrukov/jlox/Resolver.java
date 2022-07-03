@@ -15,6 +15,7 @@ public class Resolver implements Visitor<Void> {
 
     private enum FunctionType {
         NONE,
+        METHOD,
         FUNCTION
     }
 
@@ -208,9 +209,13 @@ public class Resolver implements Visitor<Void> {
 
     @Nullable
     @Override
-    public Void visitClass(Stmt.Class aClass) {
-        declare(aClass.name);
-        define(aClass.name);
+    public Void visitClass(Stmt.Class stmt) {
+        declare(stmt.name);
+        define(stmt.name);
+        for (var method : stmt.methods) {
+            var declaration = FunctionType.METHOD;
+            resolveFunction(method, declaration);
+        }
         return null;
     }
 
