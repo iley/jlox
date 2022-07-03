@@ -3,10 +3,13 @@ package com.istrukov.jlox;
 import com.google.common.collect.ImmutableList;
 
 import javax.annotation.Nullable;
+import java.util.HashMap;
+import java.util.Map;
 
 class Interpreter implements Visitor<Object> {
     Environment globals = new Environment();
     private Environment environment = globals;
+    Map<Expr, Integer> locals = new HashMap<>();
 
     Interpreter() {
         globals.define("clock", Builtin.clock);
@@ -72,7 +75,12 @@ class Interpreter implements Visitor<Object> {
     @Override
     public Object visitAssignment(Expr.Assignment assignment) {
         var value = eval(assignment.expression);
-        environment.assign(assignment.name, value);
+        var distance = locals.get(assignment);
+        if (distance != null) {
+            environment.assignAt(distance, assignment.name, value);
+        } else {
+            globals.assign(assignment.name, value);
+        }
         return value;
     }
 
@@ -173,7 +181,15 @@ class Interpreter implements Visitor<Object> {
     @Nullable
     @Override
     public Object visitVariableReference(Expr.VariableReference variableReference) {
-        return environment.get(variableReference.name);
+        return lookupVariable(variableReference.name, variableReference);
+    }
+
+    private Object lookupVariable(Token name, Expr.VariableReference variableReference) {
+        var distance = locals.get(variableReference);
+        if (distance != null) {
+            return environment.getAt(distance, name);
+        }
+        return globals.get(name);
     }
 
     @Nullable
@@ -280,5 +296,9 @@ class Interpreter implements Visitor<Object> {
         } finally {
             this.environment = previousEnvironment;
         }
+    }
+
+    public void resolve(Expr expr, int depth) {
+        locals.put(expr, depth);
     }
 }

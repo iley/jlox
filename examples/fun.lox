@@ -13,7 +13,7 @@ fun sign(x) {
 }
 
 fun makeCounter() {
-  var c = 1;
+  var c = 0;
   fun count() {
     c = c + 1;
     return c;
@@ -21,8 +21,16 @@ fun makeCounter() {
   return count;
 }
 
-print sign(-10);
-print sign(10);
+var foo = 1;
+fun outer() {
+  fun inner() {
+    print foo;
+  }
+  var foo = 2;
+  inner();
+}
+
+outer();
 
 var counter = makeCounter();
 print counter();
