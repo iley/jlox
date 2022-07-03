@@ -270,6 +270,28 @@ class Interpreter implements Visitor<Object> {
         return null;
     }
 
+    @Nullable
+    @Override
+    public Object visitGet(Expr.Get expr) {
+        var object = eval(expr.object);
+        if (object instanceof LoxInstance) {
+            return ((LoxInstance) object).get(expr.name);
+        }
+        throw new RuntimeError(expr.name, "only instances have properties");
+    }
+
+    @Nullable
+    @Override
+    public Object visitSet(Expr.Set expr) {
+        var object = eval(expr.object);
+        if (object instanceof LoxInstance) {
+            var value = eval(expr.value);
+            ((LoxInstance) object).set(expr.name, value);
+            return value;
+        }
+        throw new RuntimeError(expr.name, "only instances have properties");
+    }
+
     private boolean isEqual(@Nullable Object left, @Nullable Object right) {
         if (left == null && right == null) {
             return true;

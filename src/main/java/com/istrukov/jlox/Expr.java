@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableList;
 
 import javax.annotation.Nullable;
 
-abstract class Expr extends AstNode{
+abstract class Expr extends AstNode {
     static class Binary extends Expr {
         final Expr left;
         final Token operator;
@@ -76,7 +76,9 @@ abstract class Expr extends AstNode{
 
         @Nullable
         @Override
-        <R> R accept(Visitor<R> visitor) { return visitor.visitVariableReference(this); }
+        <R> R accept(Visitor<R> visitor) {
+            return visitor.visitVariableReference(this);
+        }
     }
 
     static class Assignment extends Expr {
@@ -90,7 +92,9 @@ abstract class Expr extends AstNode{
 
         @Nullable
         @Override
-        <R> R accept(Visitor<R> visitor) { return visitor.visitAssignment(this); }
+        <R> R accept(Visitor<R> visitor) {
+            return visitor.visitAssignment(this);
+        }
     }
 
     static class Logical extends Expr {
@@ -98,7 +102,7 @@ abstract class Expr extends AstNode{
         final Token operator;
         final Expr right;
 
-        Logical( Expr left, Token operator,Expr right) {
+        Logical(Expr left, Token operator, Expr right) {
             this.left = left;
             this.operator = operator;
             this.right = right;
@@ -126,6 +130,40 @@ abstract class Expr extends AstNode{
         @Override
         <R> R accept(Visitor<R> visitor) {
             return visitor.visitCall(this);
+        }
+    }
+
+    static class Get extends Expr {
+        final Expr object;
+        final Token name;
+
+        Get(Expr object, Token name) {
+            this.object = object;
+            this.name = name;
+        }
+
+        @Nullable
+        @Override
+        <R> R accept(Visitor<R> visitor) {
+            return visitor.visitGet(this);
+        }
+    }
+
+    static class Set extends Expr {
+        final Expr object;
+        final Token name;
+        final Expr value;
+
+        Set(Expr object, Token name, Expr value) {
+            this.object = object;
+            this.name = name;
+            this.value = value;
+        }
+
+        @Nullable
+        @Override
+        <R> R accept(Visitor<R> visitor) {
+            return visitor.visitSet(this);
         }
     }
 }

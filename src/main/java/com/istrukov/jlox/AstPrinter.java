@@ -109,6 +109,16 @@ class AstPrinter implements Visitor<String> {
         return String.format("(class %s)", classStmt.name.lexeme());
     }
 
+    @Override
+    public String visitGet(Expr.Get get) {
+        return String.format("(get %s %s)", print(get.object), get.name.lexeme());
+    }
+
+    @Override
+    public String visitSet(Expr.Set set) {
+        return String.format("(set %s %s %s)", print(set.object), set.name.lexeme(), print(set.value));
+    }
+
     @SuppressWarnings("unchecked")
     private <T extends AstNode> String parenthesize(String name, T... nodes) {
         return parenthesize(name, ImmutableList.copyOf(nodes));

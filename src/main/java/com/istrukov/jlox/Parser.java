@@ -206,6 +206,10 @@ class Parser {
                 var name = ((Expr.VariableReference) expr).name;
                 return new Expr.Assignment(name, value);
             }
+            if (expr instanceof Expr.Get) {
+                var get = (Expr.Get) expr;
+                return new Expr.Set(get.object, get.name, value);
+            }
             error(equals, "invalid assignment target");
         }
         return expr;
@@ -285,6 +289,9 @@ class Parser {
         while (true) {
             if (match(TokenType.LEFT_PAREN)) {
                 expr = finishCall(expr);
+            } else if (match(TokenType.DOT)) {
+                var name = consume(TokenType.IDENTIFIER, "expected property name after .");
+                expr = new Expr.Get(expr, name);
             } else {
                 break;
             }

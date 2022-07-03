@@ -53,4 +53,10 @@ interface Visitor<R> {
 
     @Nullable
     R visitClass(Stmt.Class aClass);
+
+    @Nullable
+    R visitGet(Expr.Get get);
+
+    @Nullable
+    R visitSet(Expr.Set set);
 }

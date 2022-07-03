@@ -213,4 +213,19 @@ public class Resolver implements Visitor<Void> {
         define(aClass.name);
         return null;
     }
+
+    @Nullable
+    @Override
+    public Void visitGet(Expr.Get get) {
+        resolve(get.object);
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public Void visitSet(Expr.Set set) {
+        resolve(set.value);
+        resolve(set.object);
+        return null;
+    }
 }

@@ -5,4 +5,6 @@ class Bagel {
 }
 
 var bagel = Bagel();
-print bagel;
+bagel.foo = "foo";
+bagel.bar = "bar";
+print bagel.foo + bagel.bar;
