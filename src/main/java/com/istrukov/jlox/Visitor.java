@@ -59,4 +59,7 @@ interface Visitor<R> {
 
     @Nullable
     R visitSet(Expr.Set set);
+
+    @Nullable
+    R visitThis(Expr.This expr);
 }

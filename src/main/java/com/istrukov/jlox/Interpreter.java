@@ -95,7 +95,7 @@ class Interpreter implements Visitor<Object> {
                 if (left instanceof Double && right instanceof Double) {
                     return (double) left + (double) right;
                 } else if (left instanceof String && right instanceof String) {
-                    return (String) left + (String) right;
+                    return left + (String) right;
                 }
                 throw new RuntimeError(binary.operator, "operands must be either two numbers or two strings");
             case MINUS:
@@ -185,8 +185,8 @@ class Interpreter implements Visitor<Object> {
         return lookupVariable(variableReference.name, variableReference);
     }
 
-    private Object lookupVariable(Token name, Expr.VariableReference variableReference) {
-        var distance = locals.get(variableReference);
+    private Object lookupVariable(Token name, Expr expr) {
+        var distance = locals.get(expr);
         if (distance != null) {
             return environment.getAt(distance, name);
         }
@@ -296,6 +296,12 @@ class Interpreter implements Visitor<Object> {
             return value;
         }
         throw new RuntimeError(expr.name, "only instances have properties");
+    }
+
+    @Nullable
+    @Override
+    public Object visitThis(Expr.This expr) {
+        return lookupVariable(expr.keyword, expr);
     }
 
     private boolean isEqual(@Nullable Object left, @Nullable Object right) {

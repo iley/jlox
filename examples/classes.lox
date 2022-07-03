@@ -16,3 +16,25 @@ bagel.f = f;
 bagel.f();
 
 bagel.eat();
+
+
+class Counter {
+  init() {
+    this.val = 0;
+  }
+
+  inc() {
+    this.val = this.val + 1;
+  }
+
+  say() {
+    print this.val;
+  }
+}
+
+var c = Counter();
+c.init();
+c.inc();
+c.inc();
+c.inc();
+c.say();

@@ -23,7 +23,7 @@ public class LoxInstance {
         }
         var method = klass.findMethod(name.lexeme());
         if (method.isPresent()) {
-            return method.get();
+            return method.get().bind(this);
         }
         throw new RuntimeError(name, String.format("Undefined property '%s'", name.lexeme()));
     }

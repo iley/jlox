@@ -326,6 +326,9 @@ class Parser {
         if (match(TokenType.IDENTIFIER)) {
             return new Expr.VariableReference(previous());
         }
+        if (match(TokenType.THIS)) {
+            return new Expr.This(previous());
+        }
         throw error(peek(), "expected an expression");
     }
 

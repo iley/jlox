@@ -12,11 +12,17 @@ public class Resolver implements Visitor<Void> {
     private final Interpreter interpreter;
     private final List<Map<String, Boolean>> scopes = new ArrayList<>();
     private FunctionType currentFunction = FunctionType.NONE;
+    private ClassType currentClass = ClassType.NONE;
 
     private enum FunctionType {
         NONE,
         METHOD,
         FUNCTION
+    }
+
+    private enum ClassType {
+        NONE,
+        CLASS
     }
 
     public Resolver(Interpreter interpreter) {
@@ -31,11 +37,15 @@ public class Resolver implements Visitor<Void> {
         scopes.remove(scopes.size() - 1);
     }
 
+    private Map<String, Boolean> lastScope() {
+        return scopes.get(scopes.size() - 1);
+    }
+
     private void declare(Token name) {
         if (scopes.isEmpty()) {
             return;
         }
-        var scope = scopes.get(scopes.size() - 1);
+        var scope = lastScope();
         if (scope.containsKey(name.lexeme())) {
             Lox.error(name, "variable with this name already declared in this scope");
         }
@@ -46,8 +56,7 @@ public class Resolver implements Visitor<Void> {
         if (scopes.isEmpty()) {
             return;
         }
-        var scope = scopes.get(scopes.size() - 1);
-        scope.put(name.lexeme(), true);
+        lastScope().put(name.lexeme(), true);
     }
 
     void resolve(ImmutableList<Stmt> stmts) {
@@ -121,9 +130,7 @@ public class Resolver implements Visitor<Void> {
     @Override
     public Void visitVar(Stmt.VariableDeclaration variableDeclaration) {
         declare(variableDeclaration.name);
-        if (variableDeclaration.initializer.isPresent()) {
-            resolve(variableDeclaration.initializer.get());
-        }
+        variableDeclaration.initializer.ifPresent(this::resolve);
         define(variableDeclaration.name);
         return null;
     }
@@ -159,9 +166,7 @@ public class Resolver implements Visitor<Void> {
     public Void visitIf(Stmt.If anIf) {
         resolve(anIf.condition);
         resolve(anIf.thenBranch);
-        if (anIf.elseBranch.isPresent()) {
-            resolve(anIf.elseBranch.get());
-        }
+        anIf.elseBranch.ifPresent(this::resolve);
         return null;
     }
 
@@ -201,21 +206,25 @@ public class Resolver implements Visitor<Void> {
         if (currentFunction == FunctionType.NONE) {
             Lox.error(aReturn.keyword, "cannot return from top-level code");
         }
-        if (aReturn.value.isPresent()) {
-            resolve(aReturn.value.get());
-        }
+        aReturn.value.ifPresent(this::resolve);
         return null;
     }
 
     @Nullable
     @Override
     public Void visitClass(Stmt.Class stmt) {
+        var enclosingClass = currentClass;
+        currentClass = ClassType.CLASS;
         declare(stmt.name);
         define(stmt.name);
+        beginScope();
+        lastScope().put("this", true);
         for (var method : stmt.methods) {
             var declaration = FunctionType.METHOD;
             resolveFunction(method, declaration);
         }
+        endScope();
+        currentClass = enclosingClass;
         return null;
     }
 
@@ -231,6 +240,17 @@ public class Resolver implements Visitor<Void> {
     public Void visitSet(Expr.Set set) {
         resolve(set.value);
         resolve(set.object);
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public Void visitThis(Expr.This expr) {
+        if (currentClass == ClassType.NONE) {
+            Lox.error(expr.keyword, "cannot use 'this' outside of class");
+            return null;
+        }
+        resolveLocal(expr, expr.keyword);
         return null;
     }
 }

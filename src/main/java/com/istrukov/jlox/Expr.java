@@ -166,4 +166,18 @@ abstract class Expr extends AstNode {
             return visitor.visitSet(this);
         }
     }
+
+    static class This extends Expr {
+        final Token keyword;
+
+        This(Token keyword) {
+            this.keyword = keyword;
+        }
+
+        @Nullable
+        @Override
+        <R> R accept(Visitor<R> visitor) {
+            return visitor.visitThis(this);
+        }
+    }
 }
