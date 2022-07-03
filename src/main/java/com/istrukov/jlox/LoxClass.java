@@ -22,13 +22,21 @@ public class LoxClass implements LoxCallable {
 
     @Override
     public int arity() {
-        return 0;
+        var initializer = methods.get("init");
+        if (initializer == null) {
+            return 0;
+        }
+        return initializer.arity();
     }
 
     @Nullable
     @Override
     public Object call(Interpreter interpreter, ImmutableList<Object> arguments) {
         var instance = new LoxInstance(this);
+        var initializer = methods.get("init");
+        if (initializer != null) {
+            initializer.bind(instance).call(interpreter, ImmutableList.of());
+        }
         return instance;
     }
 

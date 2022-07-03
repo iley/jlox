@@ -20,21 +20,24 @@ bagel.eat();
 
 class Counter {
   init() {
+    print "counter init";
     this.val = 0;
   }
 
   inc() {
+    print "counter inc";
     this.val = this.val + 1;
   }
 
   say() {
+    print "counter say";
     print this.val;
   }
 }
 
 var c = Counter();
-c.init();
 c.inc();
 c.inc();
 c.inc();
 c.say();
+print c.init();

@@ -248,7 +248,7 @@ class Interpreter implements Visitor<Object> {
     @Nullable
     @Override
     public Object visitFunction(Stmt.Function fun) {
-        environment.define(fun.name.lexeme(), new LoxFunction(fun, environment));
+        environment.define(fun.name.lexeme(), new LoxFunction(fun, environment, false));
         return null;
     }
 
@@ -268,7 +268,7 @@ class Interpreter implements Visitor<Object> {
         environment.define(stmt.name.lexeme(), null);
         var methodsBuilder = ImmutableMap.<String, LoxFunction>builder();
         for (var method : stmt.methods) {
-            var function = new LoxFunction(method, environment);
+            var function = new LoxFunction(method, environment, method.name.lexeme().equals("init"));
             methodsBuilder.put(method.name.lexeme(), function);
         }
         var klass = new LoxClass(stmt.name.lexeme(), methodsBuilder.build());

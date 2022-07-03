@@ -17,7 +17,8 @@ public class Resolver implements Visitor<Void> {
     private enum FunctionType {
         NONE,
         METHOD,
-        FUNCTION
+        FUNCTION,
+        INITIALIZER
     }
 
     private enum ClassType {
@@ -206,6 +207,9 @@ public class Resolver implements Visitor<Void> {
         if (currentFunction == FunctionType.NONE) {
             Lox.error(aReturn.keyword, "cannot return from top-level code");
         }
+        if (currentFunction == FunctionType.INITIALIZER) {
+            Lox.error(aReturn.keyword, "cannot return from initializer");
+        }
         aReturn.value.ifPresent(this::resolve);
         return null;
     }
@@ -221,6 +225,9 @@ public class Resolver implements Visitor<Void> {
         lastScope().put("this", true);
         for (var method : stmt.methods) {
             var declaration = FunctionType.METHOD;
+            if (method.name.lexeme().equals("init")) {
+                declaration = FunctionType.INITIALIZER;
+            }
             resolveFunction(method, declaration);
         }
         endScope();
