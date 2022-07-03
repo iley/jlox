@@ -30,8 +30,13 @@ fun outer() {
   inner();
 }
 
-outer();
+fun resolution_error() {
+  var x;
+  print x;
+}
 
+resolution_error();
+outer();
 var counter = makeCounter();
 print counter();
 print counter();

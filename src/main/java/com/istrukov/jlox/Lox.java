@@ -71,6 +71,9 @@ public class Lox {
         }
         var resolver = new Resolver(interpreter);
         resolver.resolve(program);
+        if (hadError) {
+            return;
+        }
         interpreter.interpret(program);
     }
 

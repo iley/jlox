@@ -10,6 +10,12 @@ import java.util.Map;
 public class Resolver implements Visitor<Void> {
     private final Interpreter interpreter;
     private final List<Map<String, Boolean>> scopes = new ArrayList<>();
+    private FunctionType currentFunction = FunctionType.NONE;
+
+    private enum FunctionType {
+        NONE,
+        FUNCTION
+    }
 
     public Resolver(Interpreter interpreter) {
         this.interpreter = interpreter;
@@ -28,6 +34,9 @@ public class Resolver implements Visitor<Void> {
             return;
         }
         var scope = scopes.get(scopes.size() - 1);
+        if (scope.containsKey(name.lexeme())) {
+            Lox.error(name, "variable with this name already declared in this scope");
+        }
         scope.put(name.lexeme(), false);
     }
 
@@ -58,7 +67,9 @@ public class Resolver implements Visitor<Void> {
         }
     }
 
-    private void resolveFunction(Stmt.Function function) {
+    private void resolveFunction(Stmt.Function function, FunctionType functionType) {
+        var enclosing = currentFunction;
+        currentFunction = functionType;
         beginScope();
         for (var param : function.params) {
             declare(param);
@@ -66,6 +77,7 @@ public class Resolver implements Visitor<Void> {
         }
         resolve(function.body);
         endScope();
+        currentFunction = enclosing;
     }
 
     @Override
@@ -178,12 +190,15 @@ public class Resolver implements Visitor<Void> {
     public Void visitFunction(Stmt.Function function) {
         declare(function.name);
         define(function.name);
-        resolveFunction(function);
+        resolveFunction(function, FunctionType.FUNCTION);
         return null;
     }
 
     @Override
     public Void visitReturn(Stmt.Return aReturn) {
+        if (currentFunction == FunctionType.NONE) {
+            Lox.error(aReturn.keyword, "cannot return from top-level code");
+        }
         if (aReturn.value.isPresent()) {
             resolve(aReturn.value.get());
         }
