@@ -141,10 +141,12 @@ abstract class Stmt extends AstNode {
     @SuppressWarnings("JavaLangClash")
     static class Class extends Stmt {
         final Token name;
+        final Optional<Expr.VariableReference> superclass;
         final ImmutableList<Stmt.Function> methods;
 
-        Class(Token name, ImmutableList<Function> methods) {
+        Class(Token name, Optional<Expr.VariableReference> superclass, ImmutableList<Function> methods) {
             this.name = name;
+            this.superclass = superclass;
             this.methods = methods;
         }
 

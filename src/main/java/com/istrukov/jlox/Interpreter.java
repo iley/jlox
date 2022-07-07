@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableMap;
 import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 class Interpreter implements Visitor<Object> {
     Environment globals = new Environment();
@@ -265,13 +266,23 @@ class Interpreter implements Visitor<Object> {
     @Nullable
     @Override
     public Object visitClass(Stmt.Class stmt) {
+        Optional<LoxClass> superclass = Optional.empty();
+        if (stmt.superclass.isPresent()) {
+            Object superclassVal = eval(stmt.superclass.get());
+            if (!(superclassVal instanceof LoxClass)) {
+                throw new RuntimeError(stmt.superclass.get().name, "superclass must be a class");
+            }
+            superclass = Optional.of((LoxClass) superclassVal);
+        }
+
         environment.define(stmt.name.lexeme(), null);
         var methodsBuilder = ImmutableMap.<String, LoxFunction>builder();
         for (var method : stmt.methods) {
             var function = new LoxFunction(method, environment, method.name.lexeme().equals("init"));
             methodsBuilder.put(method.name.lexeme(), function);
         }
-        var klass = new LoxClass(stmt.name.lexeme(), methodsBuilder.build());
+
+        var klass = new LoxClass(stmt.name.lexeme(), superclass, methodsBuilder.build());
         environment.assign(stmt.name, klass);
         return null;
     }

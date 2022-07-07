@@ -221,6 +221,12 @@ public class Resolver implements Visitor<Void> {
         currentClass = ClassType.CLASS;
         declare(stmt.name);
         define(stmt.name);
+        if (stmt.superclass.isPresent()) {
+            if (stmt.name.lexeme().equals(stmt.superclass.get().name.lexeme())) {
+                Lox.error(stmt.superclass.get().name, "cannot inherit from itself");
+            }
+            resolve(stmt.superclass.get());
+        }
         beginScope();
         lastScope().put("this", true);
         for (var method : stmt.methods) {

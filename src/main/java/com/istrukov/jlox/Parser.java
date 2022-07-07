@@ -81,13 +81,18 @@ class Parser {
 
     private Stmt.Class classDeclaration() {
         var name = consume(TokenType.IDENTIFIER, "expected a class name in declaration");
+        Optional<Expr.VariableReference> superclass = Optional.empty();
+        if (match(TokenType.LESS)) {
+            var superclassName = consume(TokenType.IDENTIFIER, "expected a superclass name in declaration");
+            superclass = Optional.of(new Expr.VariableReference(superclassName));
+        }
         consume(TokenType.LEFT_BRACE, "expected { in class declaration");
         var methods = ImmutableList.<Stmt.Function>builder();
         while (!check(TokenType.RIGHT_BRACE)) {
             methods.add(functionDeclaration());
         }
         consume(TokenType.RIGHT_BRACE, "expected } after class body");
-        return new Stmt.Class(name, methods.build());
+        return new Stmt.Class(name, superclass, methods.build());
     }
 
     private Stmt statement() {

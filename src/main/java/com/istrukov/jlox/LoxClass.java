@@ -8,10 +8,12 @@ import java.util.Optional;
 
 public class LoxClass implements LoxCallable {
     final String name;
+    final Optional<LoxClass> superclass;
     private final ImmutableMap<String, LoxFunction> methods;
 
-    public LoxClass(String name, ImmutableMap<String, LoxFunction> methods) {
+    public LoxClass(String name, Optional<LoxClass> superclass, ImmutableMap<String, LoxFunction> methods) {
         this.name = name;
+        this.superclass = superclass;
         this.methods = methods;
     }
 
@@ -41,6 +43,9 @@ public class LoxClass implements LoxCallable {
     }
 
     Optional<LoxFunction> findMethod(String name) {
-        return Optional.ofNullable(methods.get(name));
+        if (methods.containsKey(name)) {
+            return Optional.of(methods.get(name));
+        }
+        return superclass.flatMap(superclass -> superclass.findMethod(name));
     }
 }

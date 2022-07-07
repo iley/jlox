@@ -35,9 +35,21 @@ class Counter {
   }
 }
 
+class Foo {
+  foo() {
+    print "Foo.foo()";
+  }
+}
+
+class Bar < Foo {
+}
+
 var c = Counter();
 c.inc();
 c.inc();
 c.inc();
 c.say();
 print c.init();
+
+var foo = Bar();
+foo.foo();
