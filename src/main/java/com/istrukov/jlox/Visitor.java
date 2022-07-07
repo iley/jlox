@@ -62,4 +62,7 @@ interface Visitor<R> {
 
     @Nullable
     R visitThis(Expr.This expr);
+
+    @Nullable
+    R visitSuper(Expr.Super aSuper);
 }

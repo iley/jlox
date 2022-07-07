@@ -42,6 +42,10 @@ class Foo {
 }
 
 class Bar < Foo {
+  foo() {
+    super.foo();
+    print "Bar.foo()";
+  }
 }
 
 var c = Counter();

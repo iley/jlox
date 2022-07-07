@@ -323,6 +323,15 @@ class Parser {
         if (match(TokenType.FALSE, TokenType.TRUE, TokenType.NIL, TokenType.NUMBER, TokenType.STRING)) {
             return new Expr.Literal(previous().literal().get());
         }
+        if (match(TokenType.THIS)) {
+            return new Expr.This(previous());
+        }
+        if (match(TokenType.SUPER)) {
+            var keyword = previous();
+            consume(TokenType.DOT, "expected '.' after 'super'");
+            var method = consume(TokenType.IDENTIFIER, "expected superclass method name");
+            return new Expr.Super(keyword, method);
+        }
         if (match(TokenType.LEFT_PAREN)) {
             var expr = expression();
             consume(TokenType.RIGHT_PAREN, "expected ')' after expression");
@@ -330,9 +339,6 @@ class Parser {
         }
         if (match(TokenType.IDENTIFIER)) {
             return new Expr.VariableReference(previous());
-        }
-        if (match(TokenType.THIS)) {
-            return new Expr.This(previous());
         }
         throw error(peek(), "expected an expression");
     }

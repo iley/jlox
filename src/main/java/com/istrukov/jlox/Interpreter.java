@@ -276,6 +276,12 @@ class Interpreter implements Visitor<Object> {
         }
 
         environment.define(stmt.name.lexeme(), null);
+
+        if (stmt.superclass.isPresent()) {
+            environment = new Environment(environment);
+            environment.define("super", superclass.get());
+        }
+
         var methodsBuilder = ImmutableMap.<String, LoxFunction>builder();
         for (var method : stmt.methods) {
             var function = new LoxFunction(method, environment, method.name.lexeme().equals("init"));
@@ -283,6 +289,11 @@ class Interpreter implements Visitor<Object> {
         }
 
         var klass = new LoxClass(stmt.name.lexeme(), superclass, methodsBuilder.build());
+
+        if (stmt.superclass.isPresent()) {
+            environment = environment.enclosing.get();
+        }
+
         environment.assign(stmt.name, klass);
         return null;
     }
@@ -313,6 +324,22 @@ class Interpreter implements Visitor<Object> {
     @Override
     public Object visitThis(Expr.This expr) {
         return lookupVariable(expr.keyword, expr);
+    }
+
+    @Nullable
+    @Override
+    public Object visitSuper(Expr.Super expr) {
+        Integer distance = locals.get(expr);
+        if (distance == null) {
+            throw new RuntimeError(expr.keyword, "invalid distance");
+        }
+        var superclass = (LoxClass) environment.getAt(distance, new Token(TokenType.IDENTIFIER, "super", Optional.empty(), 0));
+        var object = (LoxInstance) environment.getAt(distance - 1, new Token(TokenType.IDENTIFIER, "this", Optional.empty(), 0));
+        var method = superclass.findMethod(expr.method.lexeme());
+        if (method.isEmpty()) {
+            throw new RuntimeError(expr.method, "undefined property '" + expr.method.lexeme() + "'");
+        }
+        return method.get().bind(object);
     }
 
     private boolean isEqual(@Nullable Object left, @Nullable Object right) {

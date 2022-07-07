@@ -180,4 +180,20 @@ abstract class Expr extends AstNode {
             return visitor.visitThis(this);
         }
     }
+
+    static class Super extends Expr {
+        final Token keyword;
+        final Token method;
+
+        Super(Token keyword, Token method) {
+            this.keyword = keyword;
+            this.method = method;
+        }
+
+        @Nullable
+        @Override
+        <R> R accept(Visitor<R> visitor) {
+            return visitor.visitSuper(this);
+        }
+    }
 }

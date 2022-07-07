@@ -124,6 +124,11 @@ class AstPrinter implements Visitor<String> {
         return parenthesize("this");
     }
 
+    @Override
+    public String visitSuper(Expr.Super superExpr) {
+        return parenthesize("super");
+    }
+
     @SuppressWarnings("unchecked")
     private <T extends AstNode> String parenthesize(String name, T... nodes) {
         return parenthesize(name, ImmutableList.copyOf(nodes));
